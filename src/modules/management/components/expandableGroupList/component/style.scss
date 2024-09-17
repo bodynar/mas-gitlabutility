@@ -1,0 +1,20 @@
+@use "src/shared/styles.scss" as vars;
+
+.app-expandable-menu {
+    max-height: 50vh;
+    overflow: auto;
+
+    &__item {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows vars.$transition-duration vars.$transition-function;
+
+        &.is-expanded {
+            grid-template-rows: 1fr;
+        }
+
+        &-content {
+            overflow: hidden;
+        }
+    }
+}

@@ -1,0 +1,27 @@
+/* transition */
+$transition-duration: 0.075s;
+$transition-function: ease-in;
+
+/* animation */
+$animation-duration: 0.3s;
+
+html {
+    height: 100vh;
+}
+
+body, #root {
+    height: 100%;
+}
+
+.bbr-icon {
+    transition-duration: $transition-duration !important;
+    transition-timing-function: $transition-function !important;
+}
+
+.bbr-dropdown label.bbr-dropdown__label span {
+    max-width: max-content;
+}
+
+.has-text-wrapped {
+    white-space: pre-line;
+}

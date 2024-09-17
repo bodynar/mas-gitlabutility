@@ -1,0 +1,71 @@
+@use "src/shared/styles.scss" as variables;
+
+.tippy {
+    padding: 0.25rem;
+    width: 5rem;
+
+    border-radius: 4px;
+    background: rgba(#000, 0.875);
+    color: #fff;
+    font-size: 0.75rem;
+
+    position: absolute;
+    z-index: 1;
+    left: calc(0% - 5rem - 0.25rem - 2px); // width, padding, border * 2
+
+    text-align: center;
+    transition: variables.$transition-duration variables.$transition-function opacity;
+
+    opacity: 0;
+
+    &.fade-in {
+        animation: fadeIn variables.$animation-duration variables.$transition-function forwards;
+        animation-delay: 0.1s;
+    }
+
+    &.fade-out {
+        animation: fadeOut variables.$animation-duration variables.$transition-function forwards;
+    }
+
+    &::after {
+        content: " ";
+        position: absolute;
+        left: 100%;
+        top: calc(50% - 0.25rem);
+
+        width: 0;
+        height: 0;
+
+        border-style: solid;
+        border-width: 0.25rem 0 0.25rem 0.25rem;
+        border-color: transparent transparent transparent rgba(#000, 0.875);
+
+        transition: variables.$transition-duration variables.$transition-function opacity;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+}

@@ -1,0 +1,34 @@
+@use "src/shared/styles.scss" as vars;
+
+[role="notification-container"] .notification {
+    max-height: 12.5rem;
+    overflow: auto;
+    font-size: 0.95rem;
+
+    transition: vars.$transition-duration vars.$transition-function;
+    transition-property: right, opacity;
+
+    &-enter {
+        opacity: 0;
+        right: -100%;
+    }
+    &-enter-active {
+        opacity: 1;
+        right: 0;
+        transition:
+            opacity vars.$transition-duration vars.$transition-function,
+            right vars.$transition-duration vars.$transition-function;
+    }
+    &-exit {
+        opacity: 1;
+        right: 0;
+    }
+    &-exit-active {
+        opacity: 0;
+        right: -110%;
+
+        transition:
+            opacity vars.$transition-duration vars.$transition-function,
+            right vars.$transition-duration vars.$transition-function;
+    }
+}

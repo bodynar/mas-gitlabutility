@@ -1,0 +1,45 @@
+$ball-height: 43.2px;
+
+.app-loading-cover {
+   position: relative;
+   height: 100%;
+
+   &__image {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      row-gap: 1.25rem;
+      z-index: 10;
+
+      &--center {
+         align-items: center;
+      }
+   }
+
+   &__content[data-disabled="true"] {
+      opacity: 0.125;
+      pointer-events: none;
+      display: block;
+      width: 100%;
+      height: auto;
+   }
+
+   .loader-wrapper {
+      position: relative;
+      width: 15rem;
+
+      progress.progress {
+         border-radius: 2px;
+         &:indeterminate {
+            background-image: linear-gradient(to right, #61dafb 30%, hsl(0, 0%, 93%) 30%);
+
+            animation-duration: 2s;
+         }
+      }
+   }
+}

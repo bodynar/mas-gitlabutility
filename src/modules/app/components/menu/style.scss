@@ -1,0 +1,22 @@
+@use "src/shared/styles.scss" as vars;
+
+.app-menu {
+    .menu-list {
+        [role*="app-menu-link"] {
+            transition:
+                vars.$transition-duration vars.$transition-function background-color,
+                color;
+            .bbr-icon {
+                margin-right: 0.25rem;
+            }
+        }
+
+        [role="app-menu-link-disabled"] {
+            cursor: not-allowed;
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+    }
+}

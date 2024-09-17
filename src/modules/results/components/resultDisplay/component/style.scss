@@ -1,0 +1,15 @@
+.bbr-accordion {
+    .message-body__content {
+        max-height: 12.5rem;
+        overflow: auto;
+    }
+
+    .top-right-btn-wrapper {
+        position: relative;
+
+        & > div {
+            position: absolute;
+            right: 2.5%;
+        }
+    }
+}

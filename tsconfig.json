@@ -1,0 +1,71 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "@app/shared/*": [
+        "src/shared/*"
+      ],
+      "@app/models": [
+        "src/models"
+      ],
+      "@app/core": [
+        "src/core",
+        "src/core/app"
+      ],
+      "@app/core/gitlab": [
+        "src/core/gitlab"
+      ],
+      "@app/core/gitlab/*": [
+        "src/core/gitlab/*"
+      ],
+      "@app/core/storage": [
+        "src/core/store"
+      ],
+      "@app/core/log": [
+        "src/core/log"
+      ],
+      "@app/store": [
+        "src/store"
+      ],
+      "@app/store/main": [
+        "src/store/store"
+      ],
+      "@app/store/app": [
+        "src/store/app"
+      ],
+      "@app/store/gitlab": [
+        "src/store/gitlab"
+      ],
+      "@app/store/notificator": [
+        "src/store/notificator"
+      ],
+      "@app/modules/*": [
+        "src/modules/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "./vite.*.ts",
+    "./forge.*.ts"
+  ],
+  "exclude": [
+    "out"
+  ]
+}
