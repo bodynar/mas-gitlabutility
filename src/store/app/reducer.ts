@@ -1,9 +1,10 @@
 import { createReducer } from "@reduxjs/toolkit";
 
-import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
+import { isNullish, isNullOrEmpty } from "@bodynarf/utils";
 
-import { AppSettings, ApplicationStatus, CommonAppState, SettingsUpdatePair, favoriteGroup, resetTemplates, saveSettings, setAppStatus, templateSettings, transitIntoLoadingState } from ".";
+import { AppSettings, ApplicationStatus, CommonAppState, SettingsUpdatePair, favoriteGroup, initHistory, removeHistory, resetTemplates, saveHistory, saveSettings, setAppStatus, setExtraBranches, templateSettings, transitIntoLoadingState, updateLoadingProcessingState } from ".";
 import { saveApiInInaccessible } from "../gitlab";
+import { appSession } from "@app/shared/values";
 
 const defaultSettings: AppSettings = {
     apiUrl: "",
@@ -20,6 +21,12 @@ const defaultState: CommonAppState = {
     status: ApplicationStatus.init,
     settings: defaultSettings,
     previousSettings: defaultSettings,
+    appHistory: {
+        sessions: [],
+        notifications: [],
+        results: [],
+    },
+    extraBranches: [],
 };
 
 /** Application shared state reducer */
@@ -33,13 +40,34 @@ export const reducer = createReducer(defaultState,
 
                 state.status = payload;
 
-                if (!isNullOrUndefined(state.loadingStateConfig)) {
+                if (!isNullish(state.loadingStateConfig)) {
                     state.loadingStateConfig = undefined;
                 }
             })
             .addCase(transitIntoLoadingState, (state, { payload }) => {
                 state.status = ApplicationStatus.loading;
                 state.loadingStateConfig = payload;
+            })
+            .addCase(updateLoadingProcessingState, (state, { payload }) => {
+                if (state.status !== ApplicationStatus.loading) {
+                    return;
+                }
+
+                if (isNullish(state.loadingStateConfig)) {
+                    return;
+                }
+
+                const [stateValue, message, maxState] = payload;
+
+                state.loadingStateConfig = {
+                    ...state.loadingStateConfig,
+                    processState: {
+                        ...state.loadingStateConfig?.processState,
+                        state: stateValue,
+                        message: message ?? state.loadingStateConfig?.processState?.message,
+                        maxState: maxState ?? state.loadingStateConfig?.processState?.maxState,
+                    },
+                }
             })
             .addCase(saveSettings, (state, { payload }) => {
                 const [settings, isInit] = payload;
@@ -94,6 +122,22 @@ export const reducer = createReducer(defaultState,
                     state.settings.preloadGroupIds = [];
                 }
             })
+            .addCase(saveHistory, (state, { payload }) => {
+                state.appHistory = { ...payload };
+            })
+            .addCase(initHistory, (state, { payload }) => {
+                state.appHistory = { ...payload };
+            })
+            .addCase(removeHistory, (state) => {
+                state.appHistory = {
+                    notifications: [],
+                    results: [],
+                    sessions: [appSession],
+                };
+            })
+            .addCase(setExtraBranches, (state, { payload }) => {
+                state.extraBranches = [...payload];
+            })
             ;
     }
 );
@@ -111,7 +155,7 @@ const shouldClearFavoriteGroups = (settings: Array<SettingsUpdatePair>, previous
 
     const apiUrl = settings.find(({ key }) => key === "apiUrl");
 
-    if (isNullOrUndefined(apiUrl)) {
+    if (isNullish(apiUrl)) {
         return false;
     }
 

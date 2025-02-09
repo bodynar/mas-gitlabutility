@@ -1,4 +1,4 @@
-import { MergeActionResult, ReleaseAction, MergeAction, ReleaseActionResult, TagResult, DefaultBranch, ActionResultState, CancellationToken } from "@app/models";
+import { MergeActionResult, ReleaseAction, MergeAction, ReleaseActionResult, TagResult, DefaultBranch, ActionResultState, CancellationToken, ProcessStateEmitter } from "@app/models";
 
 import { actionHandler } from "./common";
 import { addTag, getBranchInfo } from "../project";
@@ -9,10 +9,13 @@ import { performMergeAction } from "./merge";
  * @description Merge test into master with optional tagging action
  * @param action Release action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @returns Promise with operation result
  */
 export const performReleaseAction: actionHandler = async (
-    action: ReleaseAction, cancellationToken: CancellationToken
+    action: ReleaseAction,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<ReleaseActionResult> => {
     const mergeResult =
         await performMergeAction(
@@ -23,7 +26,8 @@ export const performReleaseAction: actionHandler = async (
                     target: DefaultBranch.Master,
                 }
             ),
-            cancellationToken
+            cancellationToken,
+            messageUpdateEventEmitter
         ) as MergeActionResult;
 
 
@@ -63,6 +67,12 @@ export const performReleaseAction: actionHandler = async (
             };
         }
 
+        messageUpdateEventEmitter.trigger({
+            state: index,
+            message: `Gathering branch info ${index + 1}\\${upToDateProjectsIds.length}`,
+            maxState: upToDateProjectsIds.length
+        });
+
         const projectId = upToDateProjectsIds[index];
 
         const { commitSha } = await getBranchInfo(projectId, "master");
@@ -79,6 +89,12 @@ export const performReleaseAction: actionHandler = async (
                 createdTags,
             };
         }
+
+        messageUpdateEventEmitter.trigger({
+            state: index,
+            message: `Creating tags ${index + 1}\\${branchInfoItems.length}`,
+            maxState: branchInfoItems.length
+        });
 
         const { projectId, commitSha } = branchInfoItems[index];
 

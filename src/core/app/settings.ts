@@ -40,7 +40,7 @@ export const getSettingsFromStorage = (useDefaultValue = false): Array<SettingsU
  * @param previous Previous application settings values
  * @returns Array of changed settings
  */
-export const getDiff = (current: AppSettings, previous?: AppSettings): Array<SettingsUpdatePair> => {
+export const getSettingsDiff = (current: AppSettings, previous?: AppSettings): Array<SettingsUpdatePair> => {
     if (isNullOrUndefined(current) || isNullOrUndefined(previous)) {
         return [];
     }
@@ -137,4 +137,27 @@ export const checkHasStorage = (): boolean => {
     }
 
     return false;
+};
+
+/** Key for storage to store extra branches */
+const extraBranchesStorageKey = "extraBranchesStorageKey";
+
+/**
+ * Save extra branches to storage
+ * @param branches Extra branches
+ */
+export const saveExtraBranches = (branches: Array<string>): void => {
+    storage.set(extraBranchesStorageKey, branches ?? []);
+};
+
+/**
+ * Load extra branches from storage
+ * @returns Extra branches
+ */
+export const loadExtraBranches = (): Array<string> => {
+    if (!storage.has(extraBranchesStorageKey)) {
+        return [];
+    }
+
+    return storage.get<Array<string>>(extraBranchesStorageKey) ?? [];
 };

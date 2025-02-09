@@ -1,5 +1,5 @@
 import { isNullOrEmpty } from "@bodynarf/utils";
-import { fetchAsync, getAsync, postAsync } from "@bodynarf/utils/api/simple";
+import { postAsync, getAsync, fetchAsync } from "@bodynarf/utils/api/simple";
 
 /** Auth token */
 let authToken: string;
@@ -73,11 +73,12 @@ export const put = <TResult>(uri: string, requestData: Record<string, unknown>):
         {
             method: "PUT",
             body: JSON.stringify(requestData),
+            headers: {
+                ...getAuthHeader(),
+                ...getJsonHeader(),
+            },
         },
-        {
-            headers: getAuthHeader(),
-            timeout: 5 * 1000
-        },
+        { timeout: 5 * 1000 },
     );
 };
 
@@ -91,7 +92,10 @@ export const deleteRequest = (uri: string): Promise<void> => {
         getFullApiEndpoint(uri),
         {
             method: "DELETE",
-            headers: getAuthHeader(),
+            headers: {
+                ...getAuthHeader(),
+                ...getJsonHeader(),
+            },
         },
         {
             timeout: 5 * 1000
@@ -132,4 +136,12 @@ const getFullApiEndpoint = (apiEndpoint: string): string => {
  */
 const getAuthHeader = (): HeadersInit => {
     return { "Authorization": `Bearer ${authToken}` };
+};
+
+/**
+ * Get content type header
+ * @returns ContentType header
+ */
+const getJsonHeader = (): HeadersInit => {
+    return { "content-type": "application/json", };
 };

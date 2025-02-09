@@ -5,6 +5,7 @@ import ReleaseParameters from "../components/release";
 import MoveTagParameters from "../components/moveTag";
 import CheckDiffsParameters from "../components/checkDiffs";
 import CheckNonActualTagsParameters from "../components/checkNonActualTags";
+import CreateBranchParameters from "../components/createBranch";
 
 import "./style.scss";
 
@@ -37,6 +38,10 @@ const ParametersConfigurator = (props: ParametersConfiguratorProps): JSX.Element
 
         case Actions.checkNonActualTags:
             componentFn = (args) => <CheckNonActualTagsParameters {...args} />;
+            break;
+
+        case Actions.createBranch:
+            componentFn = (args) => <CreateBranchParameters {...args} />;
             break;
     }
 

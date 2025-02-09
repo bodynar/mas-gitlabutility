@@ -3,6 +3,7 @@ import moment from "moment";
 import { generateGuid } from "@bodynarf/utils";
 
 import { Notification, NotificationReference, NotificationType } from "@app/models";
+import { appSession } from "@app/shared/values";
 
 /**
  * Build notification model from parts
@@ -21,9 +22,10 @@ const createNotification = (
     createdOn: moment(),
     message,
     type,
-    important,
+    important: important ?? false,
     hidden: false,
     link,
+    sessionId: appSession.id
 });
 
 /**

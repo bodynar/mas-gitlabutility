@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useMemo } from "react";
 
 import { emptyFn, isNullOrUndefined } from "@bodynarf/utils";
 import Accordion from "@bodynarf/react.components/components/accordion";
@@ -45,6 +45,8 @@ const MoveTagResultDisplay: FC<MoveTagResultDisplayProps> = ({
         );
     }, [getProjectJiraRef, parameters.name, result.notMovedTags]);
 
+    const errors = useMemo(() => result.notMovedTags.groupBy<NotMovedTagInfo>("reasonType"), [result.notMovedTags]);
+
     return (
         <section>
             <Text
@@ -84,14 +86,23 @@ const MoveTagResultDisplay: FC<MoveTagResultDisplayProps> = ({
                             These tags have not been moved. Please check each tag manually
                         </p>
                         <ul>
-                            {result.notMovedTags.map(x =>
-                                <TagResultInfo
-                                    key={x.projectId}
+                            {errors.map(({ items }, index) =>
+                                <>
+                                    {items.map(x =>
+                                        <TagResultInfo
+                                            key={x.projectId}
 
-                                    notMovedTag={x}
-                                    projectId={x.projectId}
-                                    project={projects.get(x.projectId)}
-                                />
+                                            notMovedTag={x}
+                                            projectId={x.projectId}
+                                            project={projects.get(x.projectId)}
+                                        />
+                                    )}
+                                    {index !== errors.length - 1 &&
+                                        <li>
+                                            <br />
+                                        </li>
+                                    }
+                                </>
                             )}
                         </ul>
                     </>

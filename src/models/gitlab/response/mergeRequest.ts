@@ -7,7 +7,7 @@ export enum DefaultBranch {
 }
 
 /** List of default branches */
-export const DEFAULT_BRANCHES = [
+export const DEFAULT_BRANCHES: Array<string> = [
     DefaultBranch.Develop,
     DefaultBranch.Test,
     DefaultBranch.Master,

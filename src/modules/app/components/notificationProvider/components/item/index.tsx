@@ -33,7 +33,7 @@ const NotificationItem = ({
     const openErrorFile = useCallback(() => openCurrentErrorLogFile(), []);
 
     useEffect(() => {
-        if (!item.important ?? false) {
+        if (!item.important) {
             const timeout = setTimeout(() => onHideClick(), 5 * 1000);
 
             return () => clearTimeout(timeout);

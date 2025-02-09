@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { ActionResultState, CancellationToken, CheckNonActualTagsAction, CheckNonActualTagsActionResult, NotActualTagInfo } from "@app/models";
+import { ActionResultState, CancellationToken, CheckNonActualTagsAction, CheckNonActualTagsActionResult, NotActualTagInfo, ProcessStateEmitter } from "@app/models";
 
 import { actionHandler } from "./common";
 import { checkHasBranch, getBranchInfo, getTag } from "../project";
@@ -21,10 +21,13 @@ enum ReasonType {
  * Check tags that not placed on a latest commit on master branch
  * @param action Action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @returns Promise with operation result
  */
 export const performCheckNonActualTagsAction: actionHandler = async (
-    action: CheckNonActualTagsAction, cancellationToken: CancellationToken
+    action: CheckNonActualTagsAction,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<CheckNonActualTagsActionResult> => {
     const actual: Array<number> = [];
     const nonActual: Array<NotActualTagInfo> = [];
@@ -39,6 +42,11 @@ export const performCheckNonActualTagsAction: actionHandler = async (
                 errors: errors.sort((current, next) => current[2] - next[2]).map(x => [x[0], x[1]]),
             };
         }
+
+        messageUpdateEventEmitter.trigger({
+            state: index,
+            message: `Processing ${index + 1}\\${action.projects.length}`
+        });
 
         const projectId = action.projects[index];
 

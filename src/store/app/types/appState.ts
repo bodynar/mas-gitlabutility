@@ -1,4 +1,4 @@
-import { ApplicationStatus, AppSettings, LoadingStateConfig } from ".";
+import { ApplicationStatus, AppSettings, LoadingStateConfig, AppHistory } from ".";
 
 /** Application shared state */
 export type CommonAppState = {
@@ -13,4 +13,10 @@ export type CommonAppState = {
 
     /** Current loading state overlay configuration */
     loadingStateConfig?: LoadingStateConfig;
+
+    /** History of app */
+    appHistory: AppHistory;
+
+    /** User configure extra branches */
+    extraBranches: Array<string>;
 }

@@ -4,6 +4,8 @@ import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
 import Button from "@bodynarf/react.components/components/button/component";
 import { ButtonProps } from "@bodynarf/react.components";
 
+import { ProcessStateLoadingMessageConfig } from "@app/store/app";
+
 import "./style.scss";
 
 /** Loader wrapper props */
@@ -13,6 +15,9 @@ type LoaderWrapProps = {
 
     /** Loading state message */
     message?: string;
+
+    /** State of process loader */
+    processState?: ProcessStateLoadingMessageConfig;
 
     /** Cancel operation button configuration */
     cancelOptions?: Pick<ButtonProps, "caption" | "onClick" | "icon">;
@@ -24,17 +29,22 @@ type LoaderWrapProps = {
 /** Content loader wrapper */
 const LoaderWrap: FC<LoaderWrapProps> = ({
     loading, message, cancelOptions,
-    children,
+    children, processState,
 }) => {
     return (
         <div className="app-loading-cover">
             {loading &&
                 <div className="app-loading-cover__image">
                     <div className="loader-wrapper">
-                        <progress className="progress" max="100"></progress>
+                        <progress
+                            className="progress"
+                            max={processState?.maxState ?? 100}
+                            value={processState?.state ?? undefined}
+                        >{processState?.state ?? undefined}</progress>
                     </div>
                     <ExtraLoadingContent
                         message={message}
+                        extra={processState?.message}
                         cancelOptions={cancelOptions}
                     />
                 </div>
@@ -52,28 +62,37 @@ const LoaderWrap: FC<LoaderWrapProps> = ({
 export default LoaderWrap;
 
 /** Loading state block extra information */
-const ExtraLoadingContent: FC<Pick<LoaderWrapProps, "message" | "cancelOptions">> = ({
-    message, cancelOptions
+const ExtraLoadingContent: FC<
+    Pick<LoaderWrapProps, "message" | "cancelOptions">
+    & { extra?: string; }
+> = ({
+    message, cancelOptions,
+    extra
 }) => {
-    if (isNullOrEmpty(message) && isNullOrUndefined(cancelOptions)) {
-        return (<></>);
-    }
+        if (isNullOrEmpty(message) && isNullOrUndefined(cancelOptions)) {
+            return (<></>);
+        }
 
-    return (
-        <div className="is-flex is-align-items-center is-flex-direction-column">
-            <p>
-                {message}
-            </p>
-            {!isNullOrUndefined(cancelOptions) &&
-                <Button
-                    outlined
-                    type="danger"
-                    className="mt-2"
-                    icon={cancelOptions.icon}
-                    caption={cancelOptions.caption}
-                    onClick={cancelOptions.onClick}
-                />
-            }
-        </div>
-    );
-};
+        return (
+            <div className="is-flex is-align-items-center is-flex-direction-column">
+                <p>
+                    {message}
+                </p>
+                {!isNullOrEmpty(extra) &&
+                    <p className="is-italic">
+                        {extra}
+                    </p>
+                }
+                {!isNullOrUndefined(cancelOptions) &&
+                    <Button
+                        outlined
+                        type="danger"
+                        className="mt-2"
+                        icon={cancelOptions.icon}
+                        caption={cancelOptions.caption}
+                        onClick={cancelOptions.onClick}
+                    />
+                }
+            </div>
+        );
+    };

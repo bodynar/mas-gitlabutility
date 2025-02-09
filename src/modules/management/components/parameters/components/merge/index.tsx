@@ -7,24 +7,24 @@ import Text from "@bodynarf/react.components/components/primitives/text/componen
 import Icon from "@bodynarf/react.components/components/icon/component";
 
 import { Actions, actionToDescriptionMap, BaseParametersComponentProps, DEFAULT_BRANCHES, DefaultBranch, MergeParameters } from "@app/models";
-import { branchesSelectList } from "@app/shared/values";
 
 /** Merge parameters configuration props*/
 type MergeParametersProps = BaseParametersComponentProps<MergeParameters>;
 
 const MergeParametersConfiguration = ({
+    branches,
     parameters, setParameters,
     setCanExecute, setError, setShouldConfirm,
 }: MergeParametersProps): JSX.Element => {
-    const selectedFrom = branchesSelectList.find(({ value }) => parameters?.sourceBranch === value);
-    const selectedTo = branchesSelectList.find(({ value }) => parameters?.targetBranch === value);
+    const selectedFrom = branches.find(({ value }) => parameters?.sourceBranch === value);
+    const selectedTo = branches.find(({ value }) => parameters?.targetBranch === value);
 
     const [isManualName, setIsManualName] = useState(isNullOrEmpty(parameters?.template));
     const [manualRerenderCount, manualRerender] = useState(0);
     const [isHintVisible, setHintVisibility] = useState(false);
 
     const updateParametersValues = useCallback(
-        (source?: DefaultBranch, target?: DefaultBranch) => {
+        (source?: string, target?: string) => {
             const shouldConfirm = checkShouldConfirm(source, target);
 
             const formattedName = isManualName
@@ -48,8 +48,8 @@ const MergeParametersConfiguration = ({
     const onFromBranchSelected = useCallback(
         (value?: SelectableItem) => {
             updateParametersValues(
-                value?.value as DefaultBranch,
-                parameters.targetBranch as DefaultBranch,
+                value?.value,
+                parameters.targetBranch,
             );
         }, [parameters, updateParametersValues]
     );
@@ -57,8 +57,8 @@ const MergeParametersConfiguration = ({
     const onToBranchSelected = useCallback(
         (value?: SelectableItem) => {
             updateParametersValues(
-                parameters.sourceBranch as DefaultBranch,
-                value?.value as DefaultBranch,
+                parameters.sourceBranch,
+                value?.value,
             );
         },
         [parameters.sourceBranch, updateParametersValues]
@@ -67,8 +67,8 @@ const MergeParametersConfiguration = ({
     const onSwitchBranchClick = useCallback(
         () => {
             updateParametersValues(
-                parameters.targetBranch as DefaultBranch,
-                parameters.sourceBranch as DefaultBranch,
+                parameters.targetBranch,
+                parameters.sourceBranch,
             );
         }, [parameters.sourceBranch, parameters.targetBranch, updateParametersValues]);
 
@@ -146,7 +146,7 @@ const MergeParametersConfiguration = ({
                         hideOnOuterClick
                         placeholder="From"
                         value={selectedFrom}
-                        items={branchesSelectList}
+                        items={branches}
                         onSelect={onFromBranchSelected}
                         label={{ caption: "From", horizontal: false, }}
                     />
@@ -165,7 +165,7 @@ const MergeParametersConfiguration = ({
                         placeholder="To"
                         hideOnOuterClick
                         value={selectedTo}
-                        items={branchesSelectList}
+                        items={branches}
                         onSelect={onToBranchSelected}
                         label={{ caption: "To", horizontal: false, }}
                     />
@@ -191,15 +191,19 @@ export default MergeParametersConfiguration;
  * @returns `true` if extra confirm is required; otherwise - `false`
  */
 const checkShouldConfirm = (
-    source?: DefaultBranch,
-    target?: DefaultBranch,
+    source?: string,
+    target?: string,
 ): boolean => {
     if (isNullOrUndefined(source) || isNullOrUndefined(target)) {
         return false;
     }
 
-    const sourceBranchIndex = DEFAULT_BRANCHES.indexOf(source);
-    const targetBranchIndex = DEFAULT_BRANCHES.indexOf(target);
+    if (!DEFAULT_BRANCHES.includes(source) || !DEFAULT_BRANCHES.includes(target)) {
+        return true;
+    }
+
+    const sourceBranchIndex = DEFAULT_BRANCHES.indexOf(source as DefaultBranch);
+    const targetBranchIndex = DEFAULT_BRANCHES.indexOf(target as DefaultBranch);
 
     const diff = Math.abs(targetBranchIndex - sourceBranchIndex);
 

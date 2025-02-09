@@ -1,8 +1,12 @@
 import { createReducer } from "@reduxjs/toolkit";
 
+import moment from "moment";
+
 import { isNullOrUndefined } from "@bodynarf/utils";
 
+import { appSession } from "@app/shared/values";
 import { NotificatorState, hideAllNotifications, hideNotification, hideNotifications, showNotifications } from ".";
+import { initHistory, removeHistory } from "../app";
 
 const defaultState: NotificatorState = {
     notifications: [],
@@ -35,9 +39,22 @@ export const reducer = createReducer(defaultState,
             })
             .addCase(hideAllNotifications, (state) => {
                 state.notifications
-                    .filter(({ hidden}) => !hidden)
-                    .forEach(x => x.hidden = true)    
-                ;
+                    .filter(({ hidden }) => !hidden)
+                    .forEach(x => x.hidden = true)
+                    ;
+            })
+            .addCase(initHistory, (state, { payload }) => {
+                state.notifications.push(
+                    ...payload.notifications
+                        .map(x => ({
+                            ...x,
+                            createdOn: moment(x.createdOn),
+                            hidden: true,
+                        }))
+                );
+            })
+            .addCase(removeHistory, (state) => {
+                state.notifications = state.notifications.filter(({ sessionId }) => sessionId === appSession.id);
             })
             ;
     }

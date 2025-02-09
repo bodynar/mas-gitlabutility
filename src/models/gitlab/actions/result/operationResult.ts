@@ -42,4 +42,7 @@ export interface OperationResult<TResult extends ActionResult> {
 
     /** Action parameters */
     parameters?: any;
+
+    /** Session identifier when result was created */
+    sessionId: string;
 }

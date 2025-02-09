@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { connect } from "react-redux";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
@@ -9,6 +9,7 @@ import { hideAllNotifications, hideNotification } from "@app/store/notificator";
 import "./style.scss";
 
 import NotificationItem from "../components/item";
+import { appSession } from "@app/shared/values";
 
 /** Props of NotificationProvider component */
 interface NotificationProviderProps {
@@ -28,12 +29,13 @@ const NotificationProvider = ({
     hideNotification, hideAll,
 }: NotificationProviderProps): JSX.Element => {
     const hideAllNotifications = useCallback(() => hideAll(), [hideAll]);
+    const items = useMemo(() => notifications.filter(({ sessionId }) => sessionId === appSession.id), [notifications]);
 
     return (
         <TransitionGroup
             role="notification-container"
         >
-            {notifications.length >= 3 &&
+            {items.length >= 3 &&
                 <CSSTransition
                     timeout={250}
                     key="notification-cleaner"
@@ -48,7 +50,7 @@ const NotificationProvider = ({
                     </span>
                 </CSSTransition>
             }
-            {notifications.map(x =>
+            {items.map(x =>
                 <CSSTransition
                     key={x.id}
                     timeout={250}

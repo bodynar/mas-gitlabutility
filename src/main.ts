@@ -36,10 +36,11 @@ const createWindow = () => {
         "close",
         async event => {
             if (canClose) {
+                mainWindow.webContents.send("closeCurrentSession");
+                event.preventDefault();
+
                 return;
             }
-
-            event.preventDefault();
 
             const { response } = await dialog.showMessageBox(
                 mainWindow,
@@ -52,7 +53,8 @@ const createWindow = () => {
             );
 
             if (response === 0) {
-                mainWindow.destroy();
+                mainWindow.webContents.send("closeCurrentSession");
+                event.preventDefault();
             }
         }
     );
@@ -60,6 +62,8 @@ const createWindow = () => {
     // and load the index.html of the app.
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+
+        mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
     }
@@ -106,6 +110,9 @@ ipcMain
     .on(ipcMessages.store.set, async (_, key, value) => {
         store.set(key, value);
     })
+    .on(ipcMessages.store.remove, async (_, key) => {
+        store.delete(key);
+    })
     .on(ipcMessages.store.has, async (event, key) => {
         event.returnValue = store.has(key);
     })
@@ -130,5 +137,10 @@ ipcMain
     })
     .on(ipcMessages.app.preventClose, (_, value: boolean) => {
         canClose = value;
+    })
+    .on(ipcMessages.app.closeAfterSave, async () => {
+        const [window] = BrowserWindow.getAllWindows();
+
+        window.destroy();
     })
     ;

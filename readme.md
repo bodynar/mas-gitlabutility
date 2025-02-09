@@ -1,27 +1,28 @@
-# GitlabUtility
-Repository management utility is designed to perform typical operations with multiple repositories. Supported operations are
+# Gitlability
+A repository management utility designed to perform standard operations across multiple repositories. The following operations are supported:
 
-1. Merging branches (upstream\downstream) from pre-defined set.
-2. Release (merge from "test" branch into "master" branch and set the tag).
-3. Move tag on a "master" branch to latest commit (including creating of tag)
-4. Checking difference between 2 branches (pre-defined set)
-5. Searching for tags, that were not placed at latest commit on "master" branch
+1. Directed branch merging (upstream\downstream) from a provided set.
+2. Release merging (merging from test to master with version tagging).
+3. Shifting the version tag to the latest commit in the master branch (including creating it).
+4. Checking for changes between two branches.
+5. Finding tags that are not on the latest commit in the master branch.
+6. Creating a branch.
 
-## Installing
+## Installation
 
 To install this utility:
-1. Download the repository
-2. Install deps via `npm ci`
-3. Run `npm run make` (for specific platform build see [commands](https://stackoverflow.com/a/75480193))
-4. Install app from `/out` directory
+1. Download the repository.
+2. Install dependencies via `npm ci`.
+3. Run `npm run make` (for a specific platform build, see [commands](https://stackoverflow.com/a/75480193)).
+4. Install the application from the `/out` directory.
 
-## Using
+## Development
+To develop the utility, the following dependencies must be installed:
+* [nodejs](https://nodejs.org/en)
+* [vite](https://vitejs.dev/guide/)
 
-Unfortunately, there is currently no EN-US version of the user manual. But I think the user interface is easy to understand :)
-If you have any questions, please contact me at the email address listed in my profile.
-
-## Related links
-* [Electron](https://www.electronjs.org/docs/latest/)
-* [React](https://ru.legacy.reactjs.org/docs/getting-started.html)
-* [Bulma](https://bulma.io/documentation/)
-* [Bootstrap icons](https://icons.getbootstrap.com/)
+## Related Links
+* [Electron documentation](https://www.electronjs.org/docs/latest/)
+* [React documentation](https://ru.legacy.reactjs.org/docs/getting-started.html)
+* [Bulma documentation](https://bulma.io/documentation/)
+* [Icons used](https://icons.getbootstrap.com/)

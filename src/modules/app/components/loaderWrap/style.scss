@@ -35,10 +35,8 @@ $ball-height: 43.2px;
 
       progress.progress {
          border-radius: 2px;
-         &:indeterminate {
-            background-image: linear-gradient(to right, #61dafb 30%, hsl(0, 0%, 93%) 30%);
-
-            animation-duration: 2s;
+         &::-webkit-progress-value {
+            background-color: #61dafb;
          }
       }
    }

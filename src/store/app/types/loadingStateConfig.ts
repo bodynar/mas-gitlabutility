@@ -1,4 +1,4 @@
-import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
+import { isNullOrEmpty, isNullish } from "@bodynarf/utils";
 import { ButtonProps, ElementIcon } from "@bodynarf/react.components";
 
 /** Cancel button configuration */
@@ -13,6 +13,18 @@ export type CancelOperationButtonConfig = {
     clickHandler: () => void;
 };
 
+/** Configuration for loading\processing bar */
+export type ProcessStateLoadingMessageConfig = {
+    /** Current state */
+    state: number;
+
+    /** Max state value */
+    maxState: number;
+
+    /** Explanation message */
+    message?: string;
+};
+
 /** Configuration for transition app into loading state */
 type LoadingStateConfigParams = {
     /** Loading state message */
@@ -20,6 +32,9 @@ type LoadingStateConfigParams = {
 
     /** Cancel operation button configuration */
     cancelButtonConfig?: CancelOperationButtonConfig;
+
+    /** Process state config */
+    processState?: ProcessStateLoadingMessageConfig;
 };
 
 /** Application loading state configuration */
@@ -30,16 +45,23 @@ export class LoadingStateConfig {
     /** Cancel operation button configuration */
     public buttonConfig?: Pick<ButtonProps, "caption" | "onClick" | "icon">;
 
+    /** Process state config */
+    public processState?: ProcessStateLoadingMessageConfig;
+
     /** Protected constructor for access manage */
     private constructor(params: LoadingStateConfigParams) {
         this.message = params?.message ?? "";
 
-        if (!isNullOrUndefined(params?.cancelButtonConfig)) {
+        if (!isNullish(params?.cancelButtonConfig)) {
             this.buttonConfig = {
                 caption: params.cancelButtonConfig.caption,
                 onClick: params.cancelButtonConfig.clickHandler,
                 icon: params.cancelButtonConfig.icon,
             };
+        }
+
+        if (!isNullish(params?.processState)) {
+            this.processState = params.processState;
         }
     }
 
@@ -67,18 +89,22 @@ export class LoadingStateConfig {
         message: string,
         clickHandler: () => void,
         content: { caption?: string, icon?: ElementIcon, },
+        processState?: ProcessStateLoadingMessageConfig
     ): LoadingStateConfig {
-        if (isNullOrEmpty(content?.caption) && isNullOrUndefined(content?.icon)) {
+        if (isNullOrEmpty(content?.caption) && isNullish(content?.icon)) {
             throw new TypeError(`Cannot use these parameters for cancel button: icon or caption should be provided`);
         }
 
-        return new LoadingStateConfig({
+        const config = new LoadingStateConfig({
             message,
             cancelButtonConfig: {
                 caption: content?.caption,
                 icon: content?.icon,
                 clickHandler,
-            }
+            },
+            processState,
         });
+
+        return config;
     }
 }

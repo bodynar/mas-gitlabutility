@@ -1,4 +1,5 @@
 import { generateGuid } from "@bodynarf/utils";
+import { SelectableItem } from "@bodynarf/react.components";
 
 /** Possible actions to perform with app */
 export enum Actions {
@@ -10,6 +11,9 @@ export enum Actions {
 
     /** Move tag to latest commit */
     moveTag = 3,
+
+    /** Create new branch */
+    createBranch = 4,
 
     /** Check branch difference */
     checkDiffs = 100,
@@ -23,6 +27,7 @@ export const WritableActions = [
     Actions.merge,
     Actions.release,
     Actions.moveTag,
+    Actions.createBranch,
 ];
 
 /** Action to its description map */
@@ -30,6 +35,7 @@ export const actionToDescriptionMap = new Map([
     [Actions.merge, "Merge branches"],
     [Actions.release, "Make a release"], // previous text : Merge to master and push tag (optionally)
     [Actions.moveTag, "Move tag on master branch to latest commit"],
+    [Actions.createBranch, "Create new branch"],
 
     [Actions.checkDiffs, "Check diff between branches"],
     [Actions.checkNonActualTags, "Find tags not on last commit in master branch"],
@@ -97,6 +103,9 @@ export abstract class ParametrizedAction<TParameters> extends Action {
 export interface BaseParametersComponentProps<TParameter> {
     /** Current parameters value */
     parameters: TParameter;
+
+    /** Branches for dropdown */
+    branches: Array<SelectableItem>;
 
     /** Save new parameters value */
     setParameters: (parameters: TParameter) => void;

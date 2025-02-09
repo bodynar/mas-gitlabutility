@@ -4,6 +4,7 @@ export * from "./release";
 export * from "./operationResult";
 export * from "./checkDiffs";
 export * from "./checkNonActualTags";
+export * from "./createBranch";
 
 /** Baseline for gitlab actions result */
 export interface ActionResult {

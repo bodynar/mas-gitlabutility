@@ -33,7 +33,7 @@ export interface Notification {
      * Is notification important.
      * Important notification do not hide automatically
      */
-    important?: boolean;
+    important: boolean;
 
     /** Was notification hidden by user */
     hidden: boolean;
@@ -43,6 +43,9 @@ export interface Notification {
      * Will be displayed after main message with link icon
      */
     link?: NotificationReference;
+
+    /** Session identifier when notification was created */
+    sessionId?: string;
 }
 
 /** Notification link configuration */

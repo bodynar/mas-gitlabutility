@@ -4,3 +4,4 @@ export * from "./moveTag";
 export * from "./release";
 export * from "./checkDiffs";
 export * from "./checkNonActualTags";
+export * from "./createBranch";

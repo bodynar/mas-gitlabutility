@@ -5,6 +5,7 @@ import Notifications from "./notifications";
 import Management from "./management";
 import OperationsResults from "./results";
 import OperationResult from "./results/components/itemPage";
+import History from "./history";
 
 export const siteMenu: Array<NavigationMenuItem> = [
     {
@@ -45,5 +46,13 @@ export const siteMenu: Array<NavigationMenuItem> = [
         link: "/r/:id",
         name: "operationResult",
         display: false,
+    },
+    {
+        caption: "Session history",
+        component: <History />,
+        link: "/history",
+        name: "history",
+        icon: "book",
+        display: true,
     },
 ];

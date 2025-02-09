@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { connect } from "react-redux";
 
 import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { checkHasStorage, getDiff, getSettingsFromStorage, saveSettingsToStorage, setApiBase, setCurrentToken } from "@app/core";
+import { OperationResult, StorageHistoryDto, Notification } from "@app/models";
+import { setSession } from "@app/shared/values";
+import { checkHasStorage, getSettingsDiff, getHistoryFromStorage, getSettingsFromStorage, initSession, saveSettingsToStorage, setCurrentToken, saveHistoryToStorage, getSessionStateDiff, loadExtraBranches, setApiBase } from "@app/core";
 import { GlobalAppState } from "@app/store";
-import { AppSettings, ApplicationStatus, SettingsUpdatePair, saveSettings, setAppStatus, transitIntoLoadingState } from "@app/store/app";
+import { AppSettings, ApplicationStatus, SettingsUpdatePair, saveSettings, setAppStatus, transitIntoLoadingState, saveHistory, AppHistory, handleAppCloseAsync, initHistory, setExtraBranches } from "@app/store/app";
 
 /** Props type of `SettingsWatcher` */
-interface SettingsWatcherProps {
+type SettingsWatcherProps = {
     /** Current application state */
     state: ApplicationStatus;
 
@@ -17,6 +19,15 @@ interface SettingsWatcherProps {
 
     /** Previous application settings */
     previousSettings?: AppSettings;
+
+    /** History of app */
+    appHistory: AppHistory;
+
+    /** All notifications */
+    notifications: Array<Notification>;
+
+    /** Results of the operations performed */
+    operationsResults: Array<OperationResult<any>>;
 
     /**
      * Save current settings values
@@ -33,18 +44,33 @@ interface SettingsWatcherProps {
 
     /** Transit app into loading state */
     transitIntoLoadingState: () => void;
-}
+
+    /** Set app initial history loaded from storage */
+    initHistory: (history: StorageHistoryDto) => void;
+
+    /** Set app history loaded from storage */
+    saveHistory: (history: StorageHistoryDto) => void;
+
+    /** Save session info to storage */
+    handleAppClose: () => Promise<void>;
+
+    /** Save extra branches */
+    saveExtraBranches: (branches: Array<string>) => void;
+};
 
 /**
  * Application settings watcher.
  * Watches settings change to save in store.
  * Restores settings on app starting
  */
-const SettingsWatcher = ({
+const SettingsWatcher: FC<SettingsWatcherProps> = ({
     state,
     settings, previousSettings,
+    appHistory, notifications, operationsResults,
     saveSettings, setAppStatus, transitIntoLoadingState,
-}: SettingsWatcherProps): JSX.Element => {
+    initHistory, saveHistory, handleAppClose,
+    saveExtraBranches,
+}) => {
     useEffect(() => {
         if (state !== ApplicationStatus.init) {
             return;
@@ -65,17 +91,31 @@ const SettingsWatcher = ({
         }
 
         saveSettings(valuesFromStorage, !hasAnyStorage);
+
+        // Initializing app session
+        const session = initSession();
+        setSession(session);
+
+        // History loads here due to init state value
+        const history = getHistoryFromStorage();
+
+        history.sessions.push(session);
+        initHistory(history);
+
+        const extraBranches = loadExtraBranches();
+        saveExtraBranches(extraBranches);
+
         setTimeout(() => {
             setAppStatus(ApplicationStatus.afterInit);
         }, 3 * 1000);
-    }, [saveSettings, setAppStatus, state]);
+    }, [initHistory, saveExtraBranches, saveHistory, saveSettings, setAppStatus, state]);
 
     useEffect(() => {
         if (state !== ApplicationStatus.idle) {
             return;
         }
 
-        const diff = getDiff(settings, previousSettings);
+        const diff = getSettingsDiff(settings, previousSettings);
 
         if (diff.length > 0) {
             transitIntoLoadingState();
@@ -96,6 +136,29 @@ const SettingsWatcher = ({
         }
     }, [previousSettings, setAppStatus, settings, state, transitIntoLoadingState]);
 
+    useEffect(() => {
+        if (state !== ApplicationStatus.idle) {
+            return;
+        }
+
+        const diff = getSessionStateDiff(appHistory, notifications, operationsResults);
+
+        if (diff.notifications.length > 0
+            || diff.results.length > 0
+        ) {
+            transitIntoLoadingState();
+
+            const updatedHistory = saveHistoryToStorage(appHistory, diff);
+            saveHistory(updatedHistory);
+
+            setAppStatus(ApplicationStatus.idle);
+        }
+    }, [appHistory, notifications, operationsResults, saveHistory, setAppStatus, state, transitIntoLoadingState]);
+
+    useEffect(() => {
+        window.electron.app.onBeforeAppClose(handleAppClose);
+    }, [handleAppClose]);
+
     return (<></>);
 };
 
@@ -105,14 +168,22 @@ const SettingsWatcher = ({
  * Restores settings on app starting
  */
 export default connect(
-    ({ app }: GlobalAppState) => ({
+    ({ app, notificator, gitlab }: GlobalAppState) => ({
         state: app.status,
         settings: app.settings,
         previousSettings: app.previousSettings,
-    }) as Partial<SettingsWatcherProps>,
+
+        appHistory: app.appHistory,
+        notifications: notificator.notifications,
+        operationsResults: gitlab.operationsResults,
+    }),
     {
         saveSettings: (settings: Array<SettingsUpdatePair>, isStorageEmpty: boolean) => saveSettings([settings, !isStorageEmpty]),
         setAppStatus,
         transitIntoLoadingState,
-    } as Partial<SettingsWatcherProps>
+        initHistory,
+        saveHistory,
+        saveExtraBranches: setExtraBranches,
+        handleAppClose: handleAppCloseAsync,
+    }
 )(SettingsWatcher);

@@ -4,13 +4,14 @@ import { isNullOrUndefined } from "@bodynarf/utils";
 
 import { ActionResult, Actions, Project } from "@app/models";
 
-import "./style.scss";
-
 import MergeResultDisplay from "../components/merge";
 import ReleaseResultDisplay from "../components/release";
 import MoveTagResultDisplay from "../components/moveTag";
 import CheckDiffsResultDisplay from "../components/checkDiffs";
 import CheckNonActualTagsResultDisplay from "../components/checkNonActualTags";
+import CreateBranchResultDisplay from "../components/createBranch";
+
+import "./style.scss";
 
 /** Props of `ResultDisplay` */
 export interface ResultDisplayProps<TResult extends ActionResult> {
@@ -50,6 +51,10 @@ const ResultDisplay = (props: ResultDisplayProps<ActionResult>): JSX.Element => 
 
         case Actions.checkNonActualTags:
             componentFn = (args) => <CheckNonActualTagsResultDisplay {...args} />;
+            break;
+
+        case Actions.createBranch:
+            componentFn = (args) => <CreateBranchResultDisplay {...args} />;
             break;
     }
 

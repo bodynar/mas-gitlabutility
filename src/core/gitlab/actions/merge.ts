@@ -3,7 +3,7 @@ import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { isTooManyTries, retryAsync } from "ts-retry";
 
-import { ActionResultState, CancellationToken, MergeAction, MergeActionConfig, MergeActionResult, MergeResult, NotMergeReasonEnum, NotMergedRequestInfo, SafeActionResult } from "@app/models";
+import { ActionResultState, CancellationToken, MergeAction, MergeActionConfig, MergeActionResult, MergeResult, NotMergeReasonEnum, NotMergedRequestInfo, ProcessStateEmitter, SafeActionResult } from "@app/models";
 
 import { actionHandler } from "./common";
 import { checkHasDiffs, createMergeRequest, getInfo, merge } from "../project";
@@ -12,15 +12,20 @@ import { checkHasDiffs, createMergeRequest, getInfo, merge } from "../project";
  * Merge specified branches for specified projects
  * @param action Merge action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @returns Promise with operation result
  */
 export const performMergeAction: actionHandler = async (
-    action: MergeAction, cancellationToken: CancellationToken
+    action: MergeAction,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<MergeActionResult> => {
     const mergedRequests: Array<MergeResult> = [];
     const notMergedRequests: Array<NotMergedRequestInfo> = [];
 
     const replayRequests = [];
+
+    let count = 0;
 
     for (const projectId of action.projects) {
         if (cancellationToken.isCancelled) {
@@ -30,6 +35,11 @@ export const performMergeAction: actionHandler = async (
                 notMergedRequests: notMergedRequests.sort((current, next) => current.reasonType - next.reasonType),
             };
         }
+
+        messageUpdateEventEmitter.trigger({
+            state: count,
+            message: `Merging ${count++}\\${action.projects.length}`
+        });
 
         const createResult = await tryToCreateMerge(projectId, action.parameters);
 

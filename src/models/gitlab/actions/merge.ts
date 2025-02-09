@@ -1,12 +1,12 @@
-import { Actions, DefaultBranch, ParametrizedAction } from "@app/models";
+import { Actions, ParametrizedAction } from "@app/models";
 
 /** Merge action parameters */
 export interface MergeActionConfig {
     /** Source branch name */
-    source: DefaultBranch;
+    source: string; // todo: now it's string
 
     /** Target branch name */
-    target: DefaultBranch;
+    target: string;
 
     /** Merge request name */
     name: string;
@@ -33,10 +33,10 @@ export interface MergeParameters {
     name: string;
 
     /** Name of branch which should be merged from */
-    sourceBranch: DefaultBranch;
+    sourceBranch: string;
 
     /** Name of branch which should be merged to */
-    targetBranch: DefaultBranch;
+    targetBranch: string;
 
     /** Template for name */
     template: string;

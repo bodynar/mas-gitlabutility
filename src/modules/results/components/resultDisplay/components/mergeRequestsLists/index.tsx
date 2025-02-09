@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useMemo } from "react";
 
 import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
 import Anchor from "@bodynarf/react.components/components/anchor/component";
@@ -61,6 +61,8 @@ const MergeRequestsList: FC<MergeRequestsListProps> = ({
         );
     }, [getProjectJiraRef, notMergedRequests, projects]);
 
+    const errors = useMemo(() => notMergedRequests.groupBy<NotMergedRequestInfoModel>("reasonType"), [notMergedRequests]);
+
     return (
         <section role="merge-results">
             <Accordion
@@ -86,14 +88,23 @@ const MergeRequestsList: FC<MergeRequestsListProps> = ({
                             These requests cannot be merged due to some errors. Please, merge it manually
                         </p>
                         <ul>
-                            {notMergedRequests.map(x =>
-                                <NotMergedRequestInfo
-                                    key={x.id ?? x.projectId}
+                            {errors.map(({ items }, index) =>
+                                <>
+                                    {items.map(x =>
+                                        <NotMergedRequestInfo
+                                            key={x.id ?? x.projectId}
 
-                                    notMergedRequest={x}
-                                    projectId={x.projectId}
-                                    project={projects.get(x.projectId)}
-                                />
+                                            notMergedRequest={x}
+                                            projectId={x.projectId}
+                                            project={projects.get(x.projectId)}
+                                        />
+                                    )}
+                                    {index !== errors.length - 1 &&
+                                        <li>
+                                            <br />
+                                        </li>
+                                    }
+                                </>
                             )}
                         </ul>
                     </>

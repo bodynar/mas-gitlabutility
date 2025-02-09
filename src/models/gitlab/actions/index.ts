@@ -5,3 +5,4 @@ export * from "./release";
 export * from "./result";
 export * from "./checkDiffs";
 export * from "./checkNonActualTags";
+export * from "./createBranch";

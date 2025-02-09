@@ -2,7 +2,7 @@ import { Group, OperationResult, Project } from "@app/models";
 
 /** Gitlab integration state */
 export interface GitlabState {
-    /** Current gitlab api url is inaccessible */
+    /** Current gitlab api is inaccessible */
     apiIsInaccessible?: boolean;
 
     /** Available groups */

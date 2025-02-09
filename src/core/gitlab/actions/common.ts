@@ -2,19 +2,22 @@ import moment, { Moment } from "moment";
 
 import { delayResolve, generateGuid, isNullOrUndefined } from "@bodynarf/utils";
 
-import { Action, ActionResult, Actions, actionToDescriptionMap, CancellationToken, OperationResult } from "@app/models";
+import { Action, ActionResult, Actions, actionToDescriptionMap, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
+import { appSession } from "@app/shared/values";
 
 import { performMergeAction } from "./merge";
 import { performReleaseAction } from "./release";
 import { performMoveTagAction } from "./moveTag";
 import { performCheckDiffsAction } from "./checkDiffs";
 import { performCheckNonActualTagsAction } from "./checkNonActualTags";
+import { performCreateBranchAction } from "./createBranch";
 
 /** Action type to handler map */
 const actionToHandlerMap: Map<Actions, actionHandler> = new Map([
     [Actions.merge, performMergeAction],
     [Actions.release, performReleaseAction],
     [Actions.moveTag, performMoveTagAction],
+    [Actions.createBranch, performCreateBranchAction],
 
     [Actions.checkDiffs, performCheckDiffsAction],
     [Actions.checkNonActualTags, performCheckNonActualTagsAction],
@@ -25,19 +28,26 @@ const actionToHandlerMap: Map<Actions, actionHandler> = new Map([
  * @description Per one `Actions` item must be only one handler
  * @param action Action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  */
-export type actionHandler = (action: Action, cancellationToken: CancellationToken) => Promise<ActionResult>;
+export type actionHandler = (
+    action: Action,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter
+) => Promise<ActionResult>;
 
 /**
  * Perform gitlab action by its configuration
  * @param action Action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @throws {OperationError} Action cannot be handled
  * @throws {OperationError} Action execution failed with error
  */
 export const performAction = async <TAction extends Action, TResult extends ActionResult>(
     action: TAction,
-    cancellationToken: CancellationToken
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<TResult> => {
     const isHandlerDefined = actionToHandlerMap.has(action.type);
 
@@ -49,7 +59,7 @@ export const performAction = async <TAction extends Action, TResult extends Acti
 
     try {
         await delayResolve(1.5 * 1000, 0); // pause in 1.5 sec
-        const result = await handler(action, cancellationToken);
+        const result = await handler(action, cancellationToken, messageUpdateEventEmitter);
 
         return result as TResult;
     } catch (error) {
@@ -141,5 +151,6 @@ export const buildOperationResult = (
         result,
         completionTime,
         parameters,
+        sessionId: appSession.id,
     };
 };

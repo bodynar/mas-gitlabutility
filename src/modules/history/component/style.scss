@@ -1,0 +1,16 @@
+[role="history"] {
+    .history-list {
+        overflow: auto;
+        max-height: 25vh;
+        padding-right: 2.5rem;
+
+        :not(::empty) {
+            min-height: 15vh;
+        }
+
+        li {
+            border-bottom: 1px solid #61dafb;
+            padding-bottom: 0.5rem;
+        }
+    }
+}

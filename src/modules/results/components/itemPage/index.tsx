@@ -2,13 +2,16 @@ import { FC, useCallback } from "react";
 import { connect } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { emptyFn, isNullOrUndefined } from "@bodynarf/utils";
+import moment from "moment";
+
+import { emptyFn, isNullish, isNullOrUndefined } from "@bodynarf/utils";
 import Button from "@bodynarf/react.components/components/button/component";
 import Text from "@bodynarf/react.components/components/primitives/text";
 import Multiline from "@bodynarf/react.components/components/primitives/multiline";
 import Icon from "@bodynarf/react.components/components/icon";
 
-import { ActionResultState, OperationResult as OperationResultModel, Project, actionToDescriptionMap } from "@app/models";
+import { ActionResultState, OperationResult as OperationResultModel, Project, Session, actionToDescriptionMap } from "@app/models";
+import { appSession } from "@app/shared/values";
 import { GlobalAppState } from "@app/store";
 
 import ResultDisplay from "../resultDisplay";
@@ -20,11 +23,14 @@ type OperationResultProps = {
 
     /** Available projects */
     projects: Array<Project>;
+
+    /** App sessions */
+    sessions: Array<Session>;
 };
 
 /** Information about single performed operation display component */
 const OperationResult: FC<OperationResultProps> = ({
-    items, projects,
+    items, projects, sessions,
 }) => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -69,6 +75,22 @@ const OperationResult: FC<OperationResultProps> = ({
         );
     }
 
+    let sessionCaption = "";
+
+    if (item.sessionId === appSession.id) {
+        sessionCaption = "Current";
+    } else {
+        const session = sessions.find(({ id }) => id === item.sessionId);
+
+        sessionCaption = isNullish(session)
+            ? item.sessionId
+            : `[${item.sessionId.substring(0, 8)}] ${moment(session.startedAt).format("DD.MM HH:mm")
+            } - ${isNullish(session.canceledAt)
+                ? "???"
+                : moment(session.canceledAt).format("DD.MM HH:mm")
+            }`;
+    }
+
     if (isNullOrUndefined(item.startedOn)) {
         return (
             <>
@@ -83,6 +105,12 @@ const OperationResult: FC<OperationResultProps> = ({
                     <h4 className="subtitle is-4">
                         Operation #{item.shortId} result
                     </h4>
+                    <Text
+                        disabled
+                        onValueChange={emptyFn}
+                        defaultValue={sessionCaption}
+                        label={{ caption: "Session", horizontal: true }}
+                    />
                     <Text
                         disabled
                         onValueChange={emptyFn}
@@ -119,6 +147,12 @@ const OperationResult: FC<OperationResultProps> = ({
                 <h4 className="subtitle is-4">
                     Operation #{item.shortId} result
                 </h4>
+                <Text
+                    disabled
+                    onValueChange={emptyFn}
+                    defaultValue={sessionCaption}
+                    label={{ caption: "Session", horizontal: true }}
+                />
                 <Text
                     disabled
                     onValueChange={emptyFn}
@@ -175,9 +209,10 @@ const OperationResult: FC<OperationResultProps> = ({
 };
 
 export default connect(
-    ({ gitlab }: GlobalAppState) => ({
+    ({ app, gitlab }: GlobalAppState) => ({
         items: gitlab.operationsResults,
         projects: gitlab.projects,
+        sessions: app.appHistory.sessions,
     } as Partial<OperationResultProps>),
     {}
 )(OperationResult);

@@ -28,6 +28,12 @@ declare global {
                  * @returns `true` if storage contains stored value for this key; otherwise - `false`
                  */
                 has: (key: string) => boolean;
+
+                /**
+                 * Remove storage entry by key
+                 * @param key Storage unique key
+                 */
+                remove: (key: string) => void;
             };
 
             /** Application logs */
@@ -60,6 +66,12 @@ declare global {
                  * @param canClose Should app close be prevented
                  */
                 preventClose: (canClose: boolean) => void;
+
+                /**
+                 * Subscribe to app close
+                 * @param callback Obligatory function
+                 */
+                onBeforeAppClose: (callback: () => Promise<void>) => void;
             }
         };
     }

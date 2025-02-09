@@ -39,8 +39,21 @@ const has = (key: string): boolean => {
     return window.electron.store.has(key);
 };
 
+/**
+ * Remove storage entry by key
+ * @param key Storage unique key
+ */
+const remove = (key: string): void => {
+    if (isNullOrEmpty(key)) {
+        return;
+    }
+
+    return window.electron.store.remove(key);
+};
+
 export default {
     get,
     set,
     has,
+    remove,
 };

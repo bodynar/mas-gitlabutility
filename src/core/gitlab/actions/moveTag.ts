@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { ActionResultState, CancellationToken, MoveTagAction, MoveTagActionResult, MovedTagInfo, NotMovedTagInfo, NotMovedTagReason } from "@app/models";
+import { ActionResultState, CancellationToken, MoveTagAction, MoveTagActionResult, MovedTagInfo, NotMovedTagInfo, NotMovedTagReason, ProcessStateEmitter } from "@app/models";
 
 import { actionHandler } from "./common";
 import { addTag, checkHasBranch, getBranchInfo, getTag, removeTag } from "../project";
@@ -9,10 +9,13 @@ import { addTag, checkHasBranch, getBranchInfo, getTag, removeTag } from "../pro
  * Move release tag to last master commit
  * @param action Move tag action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @returns Promise with operation result
  */
 export const performMoveTagAction: actionHandler = async (
-    action: MoveTagAction, cancellationToken: CancellationToken
+    action: MoveTagAction,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<MoveTagActionResult> => {
     const movedTags: Array<MovedTagInfo> = [];
     const notMovedTags: Array<NotMovedTagInfo> = [];
@@ -25,6 +28,11 @@ export const performMoveTagAction: actionHandler = async (
                 notMovedTags: notMovedTags.sort((current, next) => current.reasonType - next.reasonType),
             };
         }
+
+        messageUpdateEventEmitter.trigger({
+            state: index,
+            message: `Processing ${index + 1}\\${action.projects.length}`
+        });
 
         const projectId = action.projects[index];
 

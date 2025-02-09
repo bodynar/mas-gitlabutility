@@ -16,12 +16,15 @@ const store = configureStore<GlobalAppState>({
     middleware: defaultMiddlewareProvider => defaultMiddlewareProvider({
         serializableCheck: {
             ignoredPaths: [
-                /[^.]*\.?\d*\.(createdOn|createdAt|completedOn|startedOn)/,
-                "app.loadingStateConfig",
+                /[^.]*\.?\d*\.(createdOn|createdAt|completedOn|startedOn|startedAt)/,
+                /loadingStateConfig/,
             ],
             ignoredActionPaths: [
-                /[^.]*\.?\d*\.(createdOn|createdAt|completedOn|startedOn)/,
-            ]
+                /[^.]*\.?\d*\.(createdOn|createdAt|completedOn|startedOn|startedAt)/,
+            ],
+            ignoredActions: [
+                "mas.gua/app/transitIntoLoadingState"
+            ],
         } as SerializableStateInvariantMiddlewareOptions
     })
 });

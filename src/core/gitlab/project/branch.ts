@@ -1,6 +1,6 @@
-import { isNullOrUndefined, post } from "@bodynarf/utils";
+import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { get } from "@app/core";
+import { get, post } from "@app/core";
 import { Branch, Commit } from "@app/models";
 
 /**
@@ -17,29 +17,6 @@ export const checkHasBranch = async (projectId: number, name: string): Promise<b
     );
 
     return !isNullOrUndefined(branches) && branches.length > 0;
-};
-
-/**
- * Create branch in project
- * @param projectId Project identifier
- * @param commitSha Commit SHA to start branch from
- * @param name Name of branch
- * @returns Promise with created branch info
- */
-export const createBranch = async (projectId: number, commitSha: string, name: string): Promise<Branch> => {
-    const apiResult = await post<BranchResponse>(`/projects/${projectId}/repository/branches`, {
-        id: projectId,
-        branch: name,
-        ref: commitSha,
-    });
-
-    return {
-        commitLink: apiResult.commit.web_url,
-        link: apiResult.web_url,
-        commitSha,
-        name,
-        projectId,
-    };
 };
 
 /**
@@ -99,6 +76,29 @@ export const getBranchInfo = async (
         commitSha: apiResult.commit.id,
         link: apiResult.web_url,
         name: branchName,
+        projectId,
+    };
+};
+
+/**
+ * Create branch in project
+ * @param projectId Project identifier
+ * @param commitSha Commit SHA to start branch from
+ * @param name Name of branch
+ * @returns Promise with created branch info
+ */
+export const createBranch = async (projectId: number, commitSha: string, name: string): Promise<Branch> => {
+    const apiResult = await post<BranchResponse>(`/projects/${projectId}/repository/branches`, {
+        id: projectId,
+        branch: name,
+        ref: commitSha,
+    });
+
+    return {
+        commitLink: apiResult.commit.web_url,
+        link: apiResult.web_url,
+        commitSha,
+        name,
         projectId,
     };
 };

@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld("electron", {
         has(key: string): boolean {
             return ipcRenderer.sendSync(ipcMessages.store.has, key);
         },
+        remove(key: string): void {
+            ipcRenderer.send(ipcMessages.store.remove, key);
+        },
     },
     log: {
         error(error: Error, errorInfo: ErrorInfo): void {
@@ -32,6 +35,13 @@ contextBridge.exposeInMainWorld("electron", {
         },
         preventClose(prevent: boolean): void {
             ipcRenderer.send(ipcMessages.app.preventClose, prevent);
-        }
+        },
+        onBeforeAppClose(callback: () => Promise<void>): void {
+            ipcRenderer?.on("closeCurrentSession", async function () {
+                await callback();
+                ipcRenderer.send(ipcMessages.app.closeAfterSave);
+            });
+        },
     }
 });
+

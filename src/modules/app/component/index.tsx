@@ -39,6 +39,14 @@ const App: FC<AppProps> = ({
         [state]
     );
 
+    /**
+     * App status is `Init` after open
+     * Then SettingWatcher loads settings from persistent storage
+     *  and changes status to `AfterInit` (after 3 sec delay)
+     * AfterInit state - this is a trigger for SplashScreen to load data from API
+     *  after successfully load - state being transited to idle (via `loadGroups` thunk)
+     */
+
     return (
         <ErrorBoundary>
             <SettingsWatcher />
@@ -50,6 +58,7 @@ const App: FC<AppProps> = ({
                         loading={state === ApplicationStatus.loading}
                         message={loadingStateConfig?.message}
                         cancelOptions={loadingStateConfig?.buttonConfig}
+                        processState={loadingStateConfig?.processState}
                     >
                         <NotificationProvider />
                         <div className="container pt-5">

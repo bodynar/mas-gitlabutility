@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { connect } from "react-redux";
 
 import { isNullOrEmpty } from "@bodynarf/utils";
@@ -8,19 +8,21 @@ import Text from "@bodynarf/react.components/components/primitives/text";
 import Search from "@bodynarf/react.components/components/search/component";
 
 import { Group } from "@app/models";
-import { checkHasTemplateDiff, getDiff } from "@app/core";
+import { checkHasTemplateDiff, getSettingsDiff } from "@app/core";
 import { GlobalAppState } from "@app/store";
 import { AppSettings, SettingsUpdatePair, favoriteGroup, resetTemplates, saveSettings } from "@app/store/app";
 import { checkVersion, loadGroups } from "@app/store/gitlab";
 
 import "./style.scss";
+
 import PreloadGroupItem from "../components/preloadGroupItem";
+import ExtraBranchList from "../components/extraBranchList";
 
 /** Current date to use in template */
 const today = new Date();
 
 /** Settings module component props */
-interface SettingsModuleProps {
+type SettingsModuleProps = {
     /** Current app settings */
     settings: AppSettings;
 
@@ -47,14 +49,14 @@ interface SettingsModuleProps {
 
     /** Reset current templates values to default */
     resetTemplates: () => void;
-}
+};
 
-const SettingsModule = ({
+const SettingsModule: FC<SettingsModuleProps> = ({
     settings,
     saveSettings,
     groups, loadGroups, favoriteGroup,
     checkVersion, resetTemplates,
-}: SettingsModuleProps): JSX.Element => {
+}) => {
     const isFirstRun = useRef(true);
     const [newSettings, setNewSettings] = useState(settings);
     const [resetCount, setResetCount] = useState(0);
@@ -89,7 +91,7 @@ const SettingsModule = ({
     }, [isViewMode, resetValues]);
 
     useEffect(() => {
-        const diff = getDiff(newSettings, settings);
+        const diff = getSettingsDiff(newSettings, settings);
 
         setHasChanges(diff.length > 0);
     }, [newSettings, settings]);
@@ -323,6 +325,22 @@ const SettingsModule = ({
                         </ul>
                     </>
                 }
+            </section>
+            <hr />
+            <section>
+                <h5 className="subtitle is-5">
+                    Additional branches
+                </h5>
+
+                <p className="is-italic mb-4">
+                    You can configure extra branches to use in merge action
+                    <br />
+                    Only unique branch names will be saved
+                    <br />
+                    <span className="has-text-weight-bold">NOTE</span>: Branch name is case sensitive
+                </p>
+
+                <ExtraBranchList />
             </section>
         </section>
     );

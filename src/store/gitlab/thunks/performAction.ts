@@ -3,14 +3,14 @@ import { ThunkAction, ThunkDispatch } from "redux-thunk";
 
 import moment, { Moment } from "moment";
 
-import { isNullOrUndefined } from "@bodynarf/utils";
+import { isNullOrUndefined, Optional } from "@bodynarf/utils";
 
-import { ActionResult, ActionResultState, Actions, actionToDescriptionMap, CancellationToken, OperationResult } from "@app/models";
-import { ActionBuilder, OperationError, buildCheckDiffsActionConfig, buildCheckNonActualTagsActionConfig, buildMergeActionConfig, buildMoveTagActionConfig, buildOperationResult, buildReleaseActionConfig, performAction } from "@app/core/gitlab/actions";
+import { ActionResult, ActionResultState, Actions, actionToDescriptionMap, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
+import { ActionBuilder, OperationError, buildCheckDiffsActionConfig, buildCheckNonActualTagsActionConfig, buildCreateBranchActionConfig, buildMergeActionConfig, buildMoveTagActionConfig, buildOperationResult, buildReleaseActionConfig, performAction } from "@app/core/gitlab/actions";
 
 import { flash, preventClose } from "@app/core";
 import { GlobalAppState } from "@app/store";
-import { ApplicationStatus, LoadingStateConfig, setAppStatus, transitIntoLoadingState } from "@app/store/app";
+import { ApplicationStatus, LoadingStateConfig, setAppStatus, transitIntoLoadingState, updateLoadingProcessingState } from "@app/store/app";
 import { addOperationResult } from "@app/store/gitlab";
 import { ShowSimpleMessageFn, getDisplayErrorFn, getDisplaySuccessFn, getDisplayWarnFn } from "@app/store/notificator";
 
@@ -23,6 +23,7 @@ const actionToActionConfigBuilder: Map<Actions, ActionBuilder<any, any>> = new M
     [Actions.moveTag, buildMoveTagActionConfig as ActionBuilder<any, any>],
     [Actions.checkDiffs, buildCheckDiffsActionConfig as ActionBuilder<any, any>],
     [Actions.checkNonActualTags, buildCheckNonActualTagsActionConfig as ActionBuilder<any, any>],
+    [Actions.createBranch, buildCreateBranchActionConfig as ActionBuilder<any, any>],
 ]);
 
 /** Action result state to notification display function matching set */
@@ -73,6 +74,18 @@ export const executeGitlabAction = (
         }
 
         const cancellationToken: CancellationToken = CancellationToken.create();
+        const messageUpdateEventEmitter = new ProcessStateEmitter(projectIds.length);
+
+        messageUpdateEventEmitter.subscribe(
+            (state, message, maxState) =>
+                dispatch(
+                    updateLoadingProcessingState([
+                        state,
+                        message,
+                        maxState
+                    ])
+                )
+        );
 
         preventClose(false);
         dispatch(
@@ -80,7 +93,8 @@ export const executeGitlabAction = (
                 LoadingStateConfig.withCancel(
                     `Performing operation "${actionToDescriptionMap.get(action)}"`,
                     () => { cancellationToken.cancel(); },
-                    { caption: "Cancel operation", }
+                    { caption: "Cancel operation", },
+                    { maxState: projectIds.length, state: 0 }
                 )
             )
         );
@@ -88,12 +102,12 @@ export const executeGitlabAction = (
         const startedOn = moment();
         let completedOn: Moment = undefined;
         let result: ActionResult = undefined;
-        let errorMessage: string | undefined = undefined;
+        let errorMessage: Optional<string>;
 
         const actionConfig = actionToActionConfigBuilder.get(action)(projectIds, parameters);
 
         try {
-            result = await performAction(actionConfig, cancellationToken);
+            result = await performAction(actionConfig, cancellationToken, messageUpdateEventEmitter);
 
             completedOn = moment();
         } catch (error) {

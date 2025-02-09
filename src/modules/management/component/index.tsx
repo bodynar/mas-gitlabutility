@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 
-import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
+import { isNullOrEmpty, isNullOrUndefined, Optional } from "@bodynarf/utils";
 import Button from "@bodynarf/react.components/components/button/component";
 import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/component";
 import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
-import { ElementSize } from "@bodynarf/react.components";
+import { ElementSize, useUnmount } from "@bodynarf/react.components";
 import Search from "@bodynarf/react.components/components/search/component";
 
-import { Actions, Group, WritableActions, actionToDescriptionMap } from "@app/models";
+import { Actions, DEFAULT_BRANCHES, DefaultBranch, Group, WritableActions, actionToDescriptionMap } from "@app/models";
+import { branchesSelectList } from "@app/shared/values";
 import { getDefaultParameters } from "@app/core/gitlab/actions";
 import { GlobalAppState } from "@app/store";
 import { AppSettings } from "@app/store/app";
@@ -24,8 +25,8 @@ const actionSelectList: Array<SelectableItem> =
         .values(Actions)
         .filter(x => !isNaN(+x))
         .map(x => x as Actions)
-        .map((value) => ({
-            displayValue: actionToDescriptionMap.get(value),
+        .map((value, index) => ({
+            displayValue: `${index + 1}. ${actionToDescriptionMap.get(value)}`,
             id: value.toString(),
             value: value.toString(),
             icon: {
@@ -54,6 +55,9 @@ interface ManagementListProps {
 
     /** Application settings */
     settings: AppSettings;
+
+    /** Branches for dropdown */
+    branches: Array<SelectableItem>;
 
     /** Select all projects */
     selectAll: () => void;
@@ -88,7 +92,7 @@ interface ManagementListProps {
 
 /** Main repositories management panel component */
 const ManagementList = ({
-    settings,
+    settings, branches,
     favoriteGroups, groups, loadGroups,
     selectedProjects, projectsCount,
     toggleItemSelect,
@@ -113,34 +117,20 @@ const ManagementList = ({
         [favoriteGroups, groups]
     );
 
-    const [currentAction, setCurrentAction] = useState<SelectableItem | undefined>(undefined);
-    const [parameters, setParameters] = useState<object | undefined>(undefined);
-    const [parametersError, setParametersError] = useState<string | undefined>(undefined);
+    const [currentAction, setCurrentAction] = useState<Optional<SelectableItem>>(undefined);
+    const [parameters, setParameters] = useState<Optional<object>>(undefined);
+    const [parametersError, setParametersError] = useState<Optional<string>>(undefined);
     const [canExecute, setCanExecute] = useState(false);
     const [isExtraConfirmRequired, setShouldConfirm] = useState(false);
     const [extraConfirmValue, setExtraConfirmValue] = useState(false);
     const [saveSelection, setSaveSelection] = useState(selectedProjects.length !== 0);
 
-    const isUnmountRef = useRef(false);
+    useUnmount(() => {
+        setSearchQuery("");
 
-    useEffect(() => {
-        return () => {
-            isUnmountRef.current = true;
-        };
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (!isUnmountRef.current) {
-                return;
-            }
-
-            setSearchQuery("");
-
-            if (!saveSelection) {
-                clearSelection();
-            }
-        };
+        if (!saveSelection) {
+            clearSelection();
+        }
     }, [clearSelection, saveSelection, setSearchQuery]);
 
     useEffect(() => {
@@ -203,7 +193,7 @@ const ManagementList = ({
                         deselectable
                         hideOnOuterClick
                         placeholder="Action"
-                        data={{ "dd-identifier": "actions"}}
+                        data={{ "dd-identifier": "actions" }}
                         value={currentAction}
                         items={actionSelectList}
                         onSelect={onActionSelect}
@@ -242,6 +232,7 @@ const ManagementList = ({
                             Parameters
                         </h5>
                         <ParametersConfigurator
+                            branches={branches}
                             parameters={parameters}
                             setParameters={setParameters}
                             setCanExecute={setCanExecute}
@@ -325,6 +316,7 @@ export default connect(
         projectsCount: gitlab.projects.length,
         searchQuery: gitlab.searchValue,
         settings: app.settings,
+        branches: getDropdownBranches(app.extraBranches),
     }),
     {
         loadGroups,
@@ -336,3 +328,21 @@ export default connect(
     }
 )(ManagementList);
 
+/**
+ * Get branches for dropdown
+ * @param extraBranches Additional branches names
+ * @returns Branches for dropdown
+ */
+const getDropdownBranches = (extraBranches: Array<string>): Array<SelectableItem> => {
+    return extraBranches
+        .withoutDuplicate()
+        .filter(x => !DEFAULT_BRANCHES.includes(x as DefaultBranch))
+        .map(x => ({
+            displayValue: x,
+            id: x,
+            value: x,
+        }))
+        .concat(
+            branchesSelectList
+        );
+};

@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { name, version } from "package.json";
+import { isNullish } from "@bodynarf/utils";
+import { appSession } from "@app/shared/values";
 
 /** Title on app name when user is blessed by random */
 const glitchyTitle = "Seems app is glitchy..";
@@ -38,6 +40,7 @@ const Brand = (): JSX.Element => {
                 <span className="has-text-grey ml-2">
                     v{version}
                 </span>
+                <AppSessionLabel />
             </section>
         );
     }
@@ -50,8 +53,31 @@ const Brand = (): JSX.Element => {
             <span className="has-text-grey ml-2">
                 v{version}
             </span>
+            <AppSessionLabel />
         </section>
     );
 };
 
 export default Brand;
+
+/** Label with app session id component */
+const AppSessionLabel: FC = () => {
+    if (isNullish(appSession)) {
+        return <></>;
+    }
+
+    return (
+        <>
+            <br />
+            <span className="has-text-grey mt-1 is-size-6 is-italic">
+                Session: <span
+                    className="is-family-monospace"
+                    style={{ cursor: "help" }}
+                    title={appSession.id}
+                >
+                    {appSession.id.substring(0, 8)}
+                </span>
+            </span>
+        </>
+    );
+};

@@ -1,5 +1,5 @@
 import { get, post, put } from "@app/core";
-import { CreateMergeRequestResult, DEFAULT_BRANCHES, DefaultBranch, MergeRequest, MergeRequestState, MergeResult } from "@app/models";
+import { CreateMergeRequestResult, DEFAULT_BRANCHES, MergeRequest, MergeRequestState, MergeResult } from "@app/models";
 
 // #region constants
 
@@ -24,8 +24,8 @@ const DOWNSTREAM_LABEL = "merge::downstream";
  */
 export const createMergeRequest = async (
     projectId: number,
-    source: DefaultBranch,
-    target: DefaultBranch,
+    source: string,
+    target: string,
     name: string,
 ): Promise<CreateMergeRequestResult> => { // TODO: use MergeRequest in return model
     const labels = getLabels(source, target);
@@ -112,7 +112,11 @@ export const getInfo = async (projectId: number, id: number): Promise<MergeReque
  * @param targetBranch Name of target branch (which will be merged into)
  * @returns Merge request labels, separated by comma
  */
-const getLabels = (sourceBranch: DefaultBranch, targetBranch: DefaultBranch): string => {
+const getLabels = (sourceBranch: string, targetBranch: string): string => {
+    if (!DEFAULT_BRANCHES.includes(sourceBranch) || !DEFAULT_BRANCHES.includes(targetBranch)) {
+        return DEFAULT_LABEL;
+    }
+
     const labels = [
         DEFAULT_LABEL,
     ];
@@ -132,7 +136,7 @@ const getLabels = (sourceBranch: DefaultBranch, targetBranch: DefaultBranch): st
 
 // #region response models
 
-/** 
+/**
  * Api call `createMergeRequest` response
  * @see CreateMergeRequestResult
  */

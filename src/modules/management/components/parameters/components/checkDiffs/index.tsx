@@ -5,17 +5,17 @@ import Button from "@bodynarf/react.components/components/button/component";
 import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
 
 import { BaseParametersComponentProps, CheckDiffsParameters, DefaultBranch } from "@app/models";
-import { branchesSelectList } from "@app/shared/values";
 
 /** Check diffs parameters configuration props*/
 type CheckDiffsParametersProps = BaseParametersComponentProps<CheckDiffsParameters>;
 
 const CheckDiffsParametersConfiguration = ({
+    branches,
     parameters, setParameters,
     setCanExecute, setError,
 }: CheckDiffsParametersProps): JSX.Element => {
-    const selectedFrom = branchesSelectList.find(({ value }) => parameters?.source === value);
-    const selectedTo = branchesSelectList.find(({ value }) => parameters?.target === value);
+    const selectedFrom = branches.find(({ value }) => parameters?.source === value);
+    const selectedTo = branches.find(({ value }) => parameters?.target === value);
 
     const updateParametersValues = useCallback(
         (source?: DefaultBranch, target?: DefaultBranch) => {
@@ -80,7 +80,7 @@ const CheckDiffsParametersConfiguration = ({
                         hideOnOuterClick
                         placeholder="From"
                         value={selectedFrom}
-                        items={branchesSelectList}
+                        items={branches}
                         onSelect={onFromBranchSelected}
                         label={{ caption: "From", horizontal: false, }}
                     />
@@ -99,7 +99,7 @@ const CheckDiffsParametersConfiguration = ({
                         placeholder="To"
                         hideOnOuterClick
                         value={selectedTo}
-                        items={branchesSelectList}
+                        items={branches}
                         onSelect={onToBranchSelected}
                         label={{ caption: "To", horizontal: false, }}
                     />

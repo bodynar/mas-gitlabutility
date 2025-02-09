@@ -21,6 +21,9 @@ export const ipcMessages = {
 
         /** Check has store entry */
         has: `${storePrefix}_has`,
+
+        /** Remove store entry */
+        remove: `${storePrefix}_remove`,
     },
 
     /** log operations */
@@ -39,5 +42,8 @@ export const ipcMessages = {
 
         /** Prevent app from closing */
         preventClose: `${appPrefix}_preventCloseChange`,
+
+        /** Close app after history save */
+        closeAfterSave: `${appPrefix}_closeAfterSave`,
     },
 };

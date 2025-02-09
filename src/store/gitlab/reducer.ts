@@ -1,8 +1,12 @@
 import { createReducer } from "@reduxjs/toolkit";
 
-import { isNullOrUndefined } from "@bodynarf/utils";
+import moment from "moment";
 
+import { isNullish, isNullOrUndefined } from "@bodynarf/utils";
+
+import { appSession } from "@app/shared/values";
 import { GitlabState, addOperationResult, clearSelection, deselectGroup, deselectProject, markThatVersionWarningWasShown, saveApiInInaccessible, selectAll, selectGroup, selectProject, setGroups, setSearchQuery } from ".";
+import { initHistory, removeHistory } from "../app";
 
 const defaultState: GitlabState = {
     groups: [],
@@ -97,6 +101,20 @@ export const reducer = createReducer(defaultState,
                     state.groups = [];
                     state.projects = [];
                 }
+            })
+            .addCase(initHistory, (state, { payload }) => {
+                state.operationsResults.push(
+                    ...payload.results
+                        .map(x => ({
+                            ...x,
+                            createdOn: moment(x.createdOn),
+                            startedOn: moment(x.startedOn),
+                            completedOn: isNullish(x.completedOn) ? null : moment(x.completedOn)
+                        }))
+                );
+            })
+            .addCase(removeHistory, (state) => {
+                state.operationsResults = state.operationsResults.filter(({ sessionId }) => sessionId === appSession.id);
             })
             ;
     }

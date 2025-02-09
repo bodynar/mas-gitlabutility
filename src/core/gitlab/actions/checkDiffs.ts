@@ -1,23 +1,29 @@
 import { isNullish } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
-import { ActionResultState, CheckDiffsAction, CheckDiffsActionResult, CheckDiffsActionConfig, CancellationToken } from "@app/models";
+import { ActionResultState, CheckDiffsAction, CheckDiffsActionResult, CheckDiffsActionConfig, CancellationToken, ProcessStateEmitter } from "@app/models";
 
 import { actionHandler } from "./common";
 import { checkHasDiffs } from "../project";
+
 
 /**
  * Check diffs between specified branches
  * @param action Action configuration
  * @param cancellationToken Token for operation cancel
+ * @param messageUpdateEventEmitter Process state event emitter
  * @returns Promise with operation result
  */
 export const performCheckDiffsAction: actionHandler = async (
-    action: CheckDiffsAction, cancellationToken: CancellationToken
+    action: CheckDiffsAction,
+    cancellationToken: CancellationToken,
+    messageUpdateEventEmitter: ProcessStateEmitter,
 ): Promise<CheckDiffsActionResult> => {
     const errors: Array<[number, string]> = [];
     const withDiffs: Array<number> = [];
     const withoutDiffs: Array<number> = [];
+
+    let count = 0;
 
     for (const projectId of action.projects) {
         if (cancellationToken.isCancelled) {
@@ -28,6 +34,11 @@ export const performCheckDiffsAction: actionHandler = async (
                 errors,
             };
         }
+
+        messageUpdateEventEmitter.trigger({
+            state: count,
+            message: `Processing ${count++}\\${action.projects.length}`,
+        });
 
         const diffResult = await checkDiffs(projectId, action.parameters);
 
@@ -78,7 +89,7 @@ export const performCheckDiffsAction: actionHandler = async (
  */
 const checkDiffs = async (projectId: number, config: CheckDiffsActionConfig): Promise<string | boolean> => {
     try {
-        const hasDiffs = await checkHasDiffs(projectId, config.source + " e", config.target);
+        const hasDiffs = await checkHasDiffs(projectId, config.source, config.target);
 
         return hasDiffs;
     } catch (error) {
