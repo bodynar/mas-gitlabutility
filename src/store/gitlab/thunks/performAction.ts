@@ -6,9 +6,14 @@ import moment, { Moment } from "moment";
 import { isNullOrUndefined, Optional } from "@bodynarf/utils";
 
 import { ActionResult, ActionResultState, Actions, actionToDescriptionMap, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
-import { ActionBuilder, OperationError, buildCheckDiffsActionConfig, buildCheckNonActualTagsActionConfig, buildCreateBranchActionConfig, buildMergeActionConfig, buildMoveTagActionConfig, buildOperationResult, buildReleaseActionConfig, performAction } from "@app/core/gitlab/actions";
-
 import { flash, preventClose } from "@app/core";
+import { ActionBuilder, buildOperationResult, OperationError, performAction } from "@app/core/gitlab/actions";
+
+import { buildMergeActionConfig, buildReleaseActionConfig } from "@app/core/gitlab/actions/builders/streamMerge";
+import { buildCheckDiffsActionConfig, buildCheckNonActualTagsActionConfig, buildMoveTagActionConfig } from "@app/core/gitlab/actions/builders/tag";
+import { buildCreateBranchActionConfig, buildDeleteBranchActionConfig } from "@app/core/gitlab/actions/builders/branch";
+import { buildCloseMergeRequestActionConfig,  buildMergeRequestActionConfig } from "@app/core/gitlab/actions/builders/mergeRequest";
+
 import { GlobalAppState } from "@app/store";
 import { ApplicationStatus, LoadingStateConfig, setAppStatus, transitIntoLoadingState, updateLoadingProcessingState } from "@app/store/app";
 import { addOperationResult } from "@app/store/gitlab";
@@ -24,6 +29,9 @@ const actionToActionConfigBuilder: Map<Actions, ActionBuilder<any, any>> = new M
     [Actions.checkDiffs, buildCheckDiffsActionConfig as ActionBuilder<any, any>],
     [Actions.checkNonActualTags, buildCheckNonActualTagsActionConfig as ActionBuilder<any, any>],
     [Actions.createBranch, buildCreateBranchActionConfig as ActionBuilder<any, any>],
+    [Actions.deleteBranch, buildDeleteBranchActionConfig as ActionBuilder<any, any>],
+    [Actions.closeMergeRequest, buildCloseMergeRequestActionConfig as ActionBuilder<any, any>],
+    [Actions.mergeRequest, buildMergeRequestActionConfig as ActionBuilder<any, any>],
 ]);
 
 /** Action result state to notification display function matching set */

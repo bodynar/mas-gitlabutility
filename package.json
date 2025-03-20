@@ -1,6 +1,6 @@
 {
   "name": "gitlability",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "main": ".vite/build/main.js",
   "description": "Handy gitlab utility to perform release and branch management",
   "scripts": {

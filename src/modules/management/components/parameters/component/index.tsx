@@ -1,11 +1,17 @@
 import { Actions, BaseParametersComponentProps } from "@app/models";
 
-import MergeParameters from "../components/merge";
-import ReleaseParameters from "../components/release";
-import MoveTagParameters from "../components/moveTag";
-import CheckDiffsParameters from "../components/checkDiffs";
-import CheckNonActualTagsParameters from "../components/checkNonActualTags";
-import CreateBranchParameters from "../components/createBranch";
+import MergeParameters from "../components/streamMerge/merge";
+import ReleaseParameters from "../components/streamMerge/release";
+
+import MoveTagParameters from "../components/tag/move";
+import CheckNonActualTagsParameters from "../components/tag/checkNonActual";
+
+import CheckDiffsParameters from "../components/branch/checkDiffs";
+import CreateBranchParameters from "../components/branch/create";
+import DeleteBranchParameters from "../components/branch/delete";
+
+import CloseMergeRequestParameters from "../components/mergeRequest/close";
+import MergeRequestParameters from "../components/mergeRequest/merge";
 
 import "./style.scss";
 
@@ -42,6 +48,18 @@ const ParametersConfigurator = (props: ParametersConfiguratorProps): JSX.Element
 
         case Actions.createBranch:
             componentFn = (args) => <CreateBranchParameters {...args} />;
+            break;
+
+        case Actions.deleteBranch:
+            componentFn = (args) => <DeleteBranchParameters {...args} />;
+            break;
+
+        case Actions.closeMergeRequest:
+            componentFn = (args) => <CloseMergeRequestParameters {...args} />;
+            break;
+
+        case Actions.mergeRequest:
+            componentFn = (args) => <MergeRequestParameters {...args} />;
             break;
     }
 

@@ -5,12 +5,10 @@ import { delayResolve, generateGuid, isNullOrUndefined } from "@bodynarf/utils";
 import { Action, ActionResult, Actions, actionToDescriptionMap, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
 import { appSession } from "@app/shared/values";
 
-import { performMergeAction } from "./merge";
-import { performReleaseAction } from "./release";
-import { performMoveTagAction } from "./moveTag";
-import { performCheckDiffsAction } from "./checkDiffs";
-import { performCheckNonActualTagsAction } from "./checkNonActualTags";
-import { performCreateBranchAction } from "./createBranch";
+import { performCloseMergeRequestAction, performMergeRequestAction } from "./mergeRequest";
+import { performMergeAction, performReleaseAction } from "./streamMerge";
+import { performCheckNonActualTagsAction, performMoveTagAction } from "./tag";
+import { performCheckDiffsAction, performCreateBranchAction, performDeleteBranchAction } from "./branch";
 
 /** Action type to handler map */
 const actionToHandlerMap: Map<Actions, actionHandler> = new Map([
@@ -18,6 +16,9 @@ const actionToHandlerMap: Map<Actions, actionHandler> = new Map([
     [Actions.release, performReleaseAction],
     [Actions.moveTag, performMoveTagAction],
     [Actions.createBranch, performCreateBranchAction],
+    [Actions.deleteBranch, performDeleteBranchAction],
+    [Actions.closeMergeRequest, performCloseMergeRequestAction],
+    [Actions.mergeRequest, performMergeRequestAction],
 
     [Actions.checkDiffs, performCheckDiffsAction],
     [Actions.checkNonActualTags, performCheckNonActualTagsAction],

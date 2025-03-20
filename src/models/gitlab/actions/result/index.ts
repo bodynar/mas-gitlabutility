@@ -1,10 +1,10 @@
-export * from "./merge";
-export * from "./moveTag";
-export * from "./release";
 export * from "./operationResult";
-export * from "./checkDiffs";
-export * from "./checkNonActualTags";
-export * from "./createBranch";
+export * from "./baseActionError";
+
+export * from "./branch";
+export * from "./mergeRequest";
+export * from "./streamMerge";
+export * from "./tag";
 
 /** Baseline for gitlab actions result */
 export interface ActionResult {

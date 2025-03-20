@@ -7,6 +7,9 @@ A repository management utility designed to perform standard operations across m
 4. Checking for changes between two branches.
 5. Finding tags that are not on the latest commit in the master branch.
 6. Creating a branch.
+7. Delete a branch
+8. Close opened Merge Request
+9. Merge opened Merge Request
 
 ## Installation
 

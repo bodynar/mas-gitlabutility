@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { get, post } from "@app/core";
+import { deleteRequest, get, post } from "@app/core";
 import { Branch, Commit } from "@app/models";
 
 /**
@@ -10,13 +10,32 @@ import { Branch, Commit } from "@app/models";
  * @returns Promise with boolean result
  */
 export const checkHasBranch = async (projectId: number, name: string): Promise<boolean> => {
-    const branches = await get<Array<BranchResponse>>(
+    const branches = await getBranches(projectId, name);
+
+    return !isNullOrUndefined(branches) && branches.length > 0;
+};
+
+/**
+ * Search branches by its part name
+ * @param projectId Project identifier
+ * @param name Part of branch name
+ * @returns Data about branches
+ */
+export const getBranches = (projectId: number, name: string): Promise<Array<BranchResponse>> => {
+    return get<Array<BranchResponse>>(
         `/projects/${projectId}/repository/branches?` + new URLSearchParams({
             search: name,
         })
     );
+};
 
-    return !isNullOrUndefined(branches) && branches.length > 0;
+/**
+ * Remove specified branch by its name
+ * @param projectId Project identifier
+ * @param name Branch name
+ */
+export const deleteBranch = (projectId: number, name: string): Promise<void> => {
+    return deleteRequest(`projects/${projectId}/repository/branches/${name}`);
 };
 
 /**

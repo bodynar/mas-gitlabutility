@@ -4,12 +4,18 @@ import { isNullOrUndefined } from "@bodynarf/utils";
 
 import { ActionResult, Actions, Project } from "@app/models";
 
-import MergeResultDisplay from "../components/merge";
-import ReleaseResultDisplay from "../components/release";
-import MoveTagResultDisplay from "../components/moveTag";
-import CheckDiffsResultDisplay from "../components/checkDiffs";
-import CheckNonActualTagsResultDisplay from "../components/checkNonActualTags";
-import CreateBranchResultDisplay from "../components/createBranch";
+import MergeResultDisplay from "../components/streamMerge/merge";
+import ReleaseResultDisplay from "../components/streamMerge/release";
+
+import MoveTagResultDisplay from "../components/tag/move";
+import CheckNonActualTagsResultDisplay from "../components/tag/checkNonActual";
+
+import CheckDiffsResultDisplay from "../components/branch/checkDiffs";
+import DeleteBranchResultDisplay from "../components/branch/delete";
+import CreateBranchResultDisplay from "../components/branch/create";
+
+import CloseMergeRequestResultDisplay from "../components/mergeRequest/close";
+import MergeRequestResultDisplay from "../components/mergeRequest/merge";
 
 import "./style.scss";
 
@@ -55,6 +61,18 @@ const ResultDisplay = (props: ResultDisplayProps<ActionResult>): JSX.Element => 
 
         case Actions.createBranch:
             componentFn = (args) => <CreateBranchResultDisplay {...args} />;
+            break;
+
+        case Actions.deleteBranch:
+            componentFn = (args) => <DeleteBranchResultDisplay {...args} />;
+            break;
+
+        case Actions.closeMergeRequest:
+            componentFn = (args) => <CloseMergeRequestResultDisplay {...args} />;
+            break;
+
+        case Actions.mergeRequest:
+            componentFn = (args) => <MergeRequestResultDisplay {...args} />;
             break;
     }
 

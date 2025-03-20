@@ -71,7 +71,6 @@ export const merge = async (projectId: number, id: number): Promise<MergeResult>
         hasConflicts: apiResult.has_conflicts,
         link: apiResult.web_url,
         mergeCommitSha: apiResult.merge_commit_sha,
-        error: apiResult.merge_error,
         ref: apiResult.references.short,
     };
 };
@@ -103,6 +102,60 @@ export const getInfo = async (projectId: number, id: number): Promise<MergeReque
         mergeError: apiResult.merge_error,
         ref: apiResult.references.short,
     };
+};
+
+/**
+ * Get merge requests
+ * @param projectId Project identifier
+ * @param name Request name
+ * @param state Request state
+ * @param draft Search only in draft state
+ * @returns Data about requests
+ */
+export const getRequests = async (
+    projectId: number,
+    name: string,
+    state: MergeRequestState = "opened",
+    draft = true,
+): Promise<Array<MergeRequest>> => {
+    const apiResult = await get<Array<GetInfoResponse>>(
+        `/projects/${projectId}/merge_requests?` + new URLSearchParams({
+            state: state,
+            search: name,
+            draft: draft ? "yes" : "no"
+        })
+    );
+
+    return apiResult.map(x => ({
+        id: x.iid,
+        projectId: x.project_id,
+        globalId: x.iid,
+        title: x.title,
+        sourceBranch: x.source_branch,
+        targetBranch: x.target_branch,
+        labels: x.labels,
+        draft,
+        hasConflicts: x.has_conflicts,
+        link: x.web_url,
+        state: state,
+        status: x.merge_status,
+        fromCommitSha: x.sha,
+        canBeMergedByCurrentUser: x.user?.can_merge ?? false,
+        mergeError: x.merge_error,
+        ref: x.references?.short ?? "",
+    }));
+};
+
+/**
+ * Close specified request
+ * @param projectId Project identifier
+ * @param id Merge request identifier
+ * @returns Promise
+ */
+export const closeRequest = async (projectId: number, id: number): Promise<void> => {
+    return await put(
+        `/projects/${projectId}/merge_requests/${id}`, { state_event: "close" }
+    );
 };
 
 /**
@@ -148,7 +201,7 @@ interface CreateMergeRequestResponse {
     target_branch: string;
     source_branch: string;
     web_url: string;
-    references: { short: string };
+    references: { short: string; };
 }
 
 /**
@@ -160,7 +213,7 @@ interface MergeResponse {
     has_conflicts: boolean;
     merge_error?: string;
     web_url: string;
-    references: { short: string };
+    references: { short: string; };
 }
 
 /** @see MergeRequest */
@@ -180,7 +233,7 @@ interface GetInfoResponse {
     has_conflicts: boolean;
     merge_error?: string;
     user: { can_merge: boolean; };
-    references: { short: string };
+    references: { short: string; };
 }
 
 // #endregion
