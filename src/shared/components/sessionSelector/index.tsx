@@ -7,7 +7,8 @@ import { isNullish } from "@bodynarf/utils";
 import { SelectableItem } from "@bodynarf/react.components";
 import Dropdown from "@bodynarf/react.components/components/dropdown";
 
-import { OperationResult, Session, Notification } from "@app/models";
+import { OperationResult, Session, Notification, ActionResult } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { GlobalAppState } from "@app/store";
 import { appSession } from "@app/shared/values";
 
@@ -20,10 +21,13 @@ type SessionSelectorProps = {
     notifications: Array<Notification>;
 
     /** Operation results history */
-    results: Array<OperationResult<any>>;
+    results: Array<OperationResult<ActionResult>>;
 
     /** Type of display */
     mode: "Notifications" | "Results";
+
+    /** Selected value by default */
+    defaultValue?: Session;
 
     /**
      * Handler of session select
@@ -35,6 +39,7 @@ type SessionSelectorProps = {
 const SessionSelector: FC<SessionSelectorProps> = ({
     sessions, onSessionSelected,
     mode, notifications, results,
+    defaultValue,
 }) => {
     const items = useMemo(() =>
         sessions
@@ -51,11 +56,18 @@ const SessionSelector: FC<SessionSelectorProps> = ({
         [sessions]
     );
 
-    const [item, selectedItem] = useState(items[items.length - 1]);
+    const defaultItem = useMemo(() =>
+        isNullish(defaultValue)
+            ? items[items.length - 1]
+            : items.find(({ id }) => id === defaultValue.id),
+        [defaultValue, items]
+    );
+
+    const [item, selectItem] = useState(defaultItem);
 
     const onSelect = useCallback(
         (item: SelectableItem) => {
-            selectedItem(item);
+            selectItem(item);
 
             if (!isNullish(item)) {
                 onSessionSelected(sessionsMap.get(item.id));
@@ -72,9 +84,9 @@ const SessionSelector: FC<SessionSelectorProps> = ({
             items={items}
             hideOnOuterClick
             onSelect={onSelect}
-            placeholder="Sessions"
+            placeholder={getLocalizedText("common.session")}
             label={{
-                caption: "Session",
+                caption: getLocalizedText("common.session"),
                 horizontal: false
             }}
         />
@@ -103,22 +115,25 @@ const getSessionDisplayValue = (
     session: Session,
     mode: "Notifications" | "Results",
     notifications: Array<Notification>,
-    results: Array<OperationResult<any>>,
+    results: Array<OperationResult<ActionResult>>,
 ): string => {
     const postfix =
         mode === "Notifications"
             ? notifications.filter(({ sessionId }) => sessionId === session.id).length
             : results.filter(({ sessionId }) => sessionId === session.id).length;
-    const prefix = session.id === appSession.id ? "[Current] " : "";
     const startAt = moment(session.startedAt);
 
+    const currentCaption = getLocalizedText("shared.sessionSelector.current");
+
     if (isNullish(session.canceledAt)) {
+        const prefix = session.id === appSession.id ? `[${currentCaption}] ` : "";
+
         return prefix + startAt.format("DD.MM HH:mm") + ` (${postfix})`;
     }
 
     const endAt = moment(session.canceledAt);
 
     return endAt.day === startAt.day
-        ? `${prefix} ${startAt.format("DD.MM HH:mm")} - ${startAt.format("HH:mm")} (${postfix})`
-        : `${prefix} ${startAt.format("DD.MM HH:mm")} - ${startAt.format("DD.MM HH:mm")} (${postfix})`;
+        ? `${startAt.format("DD.MM HH:mm")} - ${startAt.format("HH:mm")} (${postfix})`
+        : `${startAt.format("DD.MM HH:mm")} - ${startAt.format("DD.MM HH:mm")} (${postfix})`;
 };

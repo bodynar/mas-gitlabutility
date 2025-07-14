@@ -1,4 +1,4 @@
-import { OperationResult, Session, Notification } from "@app/models";
+import { OperationResult, Session, Notification, ActionResult } from "@app/models";
 
 /** App history data */
 export type AppHistory = {
@@ -9,5 +9,5 @@ export type AppHistory = {
     notifications: Array<Notification>;
 
     /** Operation results history */
-    results: Array<OperationResult<any>>;
+    results: Array<OperationResult<ActionResult>>;
 };

@@ -1,3 +1,5 @@
+import { getLocalizedText } from "@app/locale";
+
 /** Possible actions to perform with app */
 export enum Actions {
     /** Merge branches */
@@ -24,7 +26,7 @@ export enum Actions {
     /** Check branch difference */
     checkDiffs = 100,
 
-    /** Search for tags, which not at last commit on a master branch */
+    /** Search for tags, which not at last commit on a branch */
     checkNonActualTags = 101,
 }
 
@@ -41,14 +43,14 @@ export const WritableActions = [
 
 /** Action to its description map */
 export const actionToDescriptionMap = new Map([
-    [Actions.merge, "Merge branches"],
-    [Actions.release, "Make a release"], // previous text : Merge to master and push tag (optionally)
-    [Actions.moveTag, "Move tag on master branch to latest commit"],
-    [Actions.createBranch, "Create new branch"],
-    [Actions.deleteBranch, "Delete branch"],
-    [Actions.closeMergeRequest, "Close opened merge request"],
-    [Actions.mergeRequest, "Merge opened request"],
+    [Actions.merge, getLocalizedText("shared.actionDescriptions.merge")],
+    [Actions.release, getLocalizedText("shared.actionDescriptions.release")],
+    [Actions.moveTag, getLocalizedText("shared.actionDescriptions.moveTag")],
+    [Actions.createBranch, getLocalizedText("shared.actionDescriptions.createBranch")],
+    [Actions.deleteBranch, getLocalizedText("shared.actionDescriptions.deleteBranch")],
+    [Actions.closeMergeRequest, getLocalizedText("shared.actionDescriptions.closeMergeRequest")],
+    [Actions.mergeRequest, getLocalizedText("shared.actionDescriptions.mergeRequest")],
 
-    [Actions.checkDiffs, "Check diff between branches"],
-    [Actions.checkNonActualTags, "Find tags not on last commit in master branch"],
+    [Actions.checkDiffs, getLocalizedText("shared.actionDescriptions.checkDiffs")],
+    [Actions.checkNonActualTags, getLocalizedText("shared.actionDescriptions.checkNonActualTags")],
 ]);

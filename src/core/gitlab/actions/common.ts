@@ -1,8 +1,9 @@
 import moment, { Moment } from "moment";
 
-import { delayResolve, generateGuid, isNullOrUndefined } from "@bodynarf/utils";
+import { delayResolve, generateGuid, isNullish } from "@bodynarf/utils";
 
-import { Action, ActionResult, Actions, actionToDescriptionMap, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
+import { Action, ActionResult, Actions, CancellationToken, OperationResult, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText, LocaleKeys } from "@app/locale";
 import { appSession } from "@app/shared/values";
 
 import { performCloseMergeRequestAction, performMergeRequestAction } from "./mergeRequest";
@@ -12,15 +13,17 @@ import { performCheckDiffsAction, performCreateBranchAction, performDeleteBranch
 
 /** Action type to handler map */
 const actionToHandlerMap: Map<Actions, actionHandler> = new Map([
-    [Actions.merge, performMergeAction],
-    [Actions.release, performReleaseAction],
-    [Actions.moveTag, performMoveTagAction],
+    [Actions.checkDiffs, performCheckDiffsAction],
     [Actions.createBranch, performCreateBranchAction],
     [Actions.deleteBranch, performDeleteBranchAction],
+
     [Actions.closeMergeRequest, performCloseMergeRequestAction],
     [Actions.mergeRequest, performMergeRequestAction],
 
-    [Actions.checkDiffs, performCheckDiffsAction],
+    [Actions.merge, performMergeAction],
+    [Actions.release, performReleaseAction],
+
+    [Actions.moveTag, performMoveTagAction],
     [Actions.checkNonActualTags, performCheckNonActualTagsAction],
 ]);
 
@@ -60,11 +63,14 @@ export const performAction = async <TAction extends Action, TResult extends Acti
 
     try {
         await delayResolve(1.5 * 1000, 0); // pause in 1.5 sec
+
         const result = await handler(action, cancellationToken, messageUpdateEventEmitter);
+
+        await delayResolve(0.5 * 1000, 0); // pause in 0.5 sec
 
         return result as TResult;
     } catch (error) {
-        throw new OperationError(`Error during performing operation "${actionToDescriptionMap.get(action.type)}"`, action, error);
+        throw new OperationError(`Error during performing operation "${getActionDescription(action.type)}"`, action, error);
     }
 };
 
@@ -91,16 +97,39 @@ export class OperationError extends Error {
 }
 
 /**
- * Array of time range names for moment dates difference
+ * Get operation duration in caption
+ * @param start Date time of operation start
+ * @param end Date time of operation completion
+ * @returns Duration
  */
-const timeRangeNames = [
-    "seconds",
-    "minutes",
-    "hours",
-];
+export const getDurationCaption = (start?: Moment, end?: Moment): string => {
+    if (isNullish(start) || isNullish(end)) {
+        return "";
+    }
+
+    const diff = moment(end).diff(moment(start), "seconds");
+
+    const duration = moment.duration(diff, "seconds");
+
+    const durationCaption = [
+        [duration.hours(), "core.gitlab.timeRange.hour"],
+        [duration.minutes(), "core.gitlab.timeRange.minute"],
+        [duration.seconds(), "core.gitlab.timeRange.second"],
+    ].reduce((result, [value, key]) => {
+        const measurement = value as number;
+
+        if (measurement <= 0) {
+            return result;
+        }
+
+        return result + measurement + " " + getLocalizedText(key as keyof LocaleKeys) + " ";
+    }, "");
+
+    return durationCaption.trim();
+};
 
 /**
- * Create an instance of `OperationResult<any>` with required props
+ * Create an instance of `OperationResult<ActionResult>` with required props
  * @param action Type of performed action
  * @param affectedProjects Identifiers of projects which were affected by operation
  * @param error Error that occurred during the operation
@@ -108,7 +137,7 @@ const timeRangeNames = [
  * @param completedOn When the operation completed if it was successful
  * @param result Result of the operation if it was successful
  * @param parameters Action parameters
- * @returns An instance of `OperationResult<any>`
+ * @returns An instance of `OperationResult<ActionResult>`
  */
 export const buildOperationResult = (
     action: Actions,
@@ -116,26 +145,10 @@ export const buildOperationResult = (
     error?: string,
     startedOn?: Moment,
     completedOn?: Moment,
-    result?: unknown,
+    result?: ActionResult,
     parameters?: unknown,
-): OperationResult<any> => {
-    let completionTime: { measurement: string, value: number, } | undefined = undefined;
-
-    if (!isNullOrUndefined(startedOn) && !isNullOrUndefined(completedOn)) {
-        let diff = completedOn.diff(startedOn, "seconds");
-        let timeRangeIndex = 0;
-
-        while (diff >= 60) {
-            diff = Math.round((diff / 60 + Number.EPSILON) * 100) / 100;
-
-            timeRangeIndex += 1;
-        }
-
-        completionTime = {
-            measurement: timeRangeNames[timeRangeIndex],
-            value: diff,
-        };
-    }
+): OperationResult<ActionResult> => {
+    const durationCaption = getDurationCaption(startedOn, completedOn);
 
     const id = generateGuid();
 
@@ -150,8 +163,30 @@ export const buildOperationResult = (
         startedOn,
         completedOn,
         result,
-        completionTime,
         parameters,
         sessionId: appSession.id,
+        duration: durationCaption,
     };
+};
+
+/** Action to its description map */
+const actionToDescriptionMap = new Map([
+    [Actions.merge, () => getLocalizedText("shared.actionDescriptions.merge")],
+    [Actions.release, () => getLocalizedText("shared.actionDescriptions.release")],
+    [Actions.moveTag, () => getLocalizedText("shared.actionDescriptions.moveTag")],
+    [Actions.createBranch, () => getLocalizedText("shared.actionDescriptions.createBranch")],
+    [Actions.deleteBranch, () => getLocalizedText("shared.actionDescriptions.deleteBranch")],
+    [Actions.closeMergeRequest, () => getLocalizedText("shared.actionDescriptions.closeMergeRequest")],
+    [Actions.mergeRequest, () => getLocalizedText("shared.actionDescriptions.mergeRequest")],
+    [Actions.checkDiffs, () => getLocalizedText("shared.actionDescriptions.checkDiffs")],
+    [Actions.checkNonActualTags, () => getLocalizedText("shared.actionDescriptions.checkNonActualTags")],
+]);
+
+/**
+ * Get action description
+ * @param action Action type
+ * @returns Description of specified action
+ */
+export const getActionDescription = (action: Actions): string => {
+    return actionToDescriptionMap.get(action)();
 };

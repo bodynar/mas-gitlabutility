@@ -10,8 +10,10 @@ import Text from "@bodynarf/react.components/components/primitives/text";
 import Multiline from "@bodynarf/react.components/components/primitives/multiline";
 import Icon from "@bodynarf/react.components/components/icon";
 
-import { ActionResultState, OperationResult as OperationResultModel, Project, Session, actionToDescriptionMap } from "@app/models";
+import { ActionResult, ActionResultState, OperationResult as OperationResultModel, Project, Session } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { appSession } from "@app/shared/values";
+import { getActionDescription } from "@app/core/gitlab/actions";
 import { GlobalAppState } from "@app/store";
 
 import ResultDisplay from "../resultDisplay";
@@ -19,7 +21,7 @@ import ResultDisplay from "../resultDisplay";
 /** Props of `OperationResult` */
 type OperationResultProps = {
     /** Results of the operations performed */
-    items: Array<OperationResultModel<any>>;
+    items: Array<OperationResultModel<ActionResult>>;
 
     /** Available projects */
     projects: Array<Project>;
@@ -33,9 +35,18 @@ const OperationResult: FC<OperationResultProps> = ({
     items, projects, sessions,
 }) => {
     const { id } = useParams();
+
     const navigate = useNavigate();
 
-    const onBackClick = useCallback(() => navigate(-1), [navigate]);
+    const onBackClick = useCallback(
+        () => navigate("/r/", {
+            state: {
+                sessionItem: sessions.find(({ id }) => id === item?.sessionId)
+            }
+        }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [navigate, sessions]
+    );
 
     if (isNullOrUndefined(id)) {
         return (
@@ -43,12 +54,12 @@ const OperationResult: FC<OperationResultProps> = ({
                 <Button
                     outlined
                     type="info"
-                    caption="Back"
                     className="mb-2"
                     onClick={onBackClick}
+                    caption={getLocalizedText("common.back")}
                 />
                 <span className="has-text-danger">
-                    Operation result identifier is not provided
+                    {getLocalizedText("results.resultIdIsEmpty")}
                 </span>
             </>
         );
@@ -61,14 +72,14 @@ const OperationResult: FC<OperationResultProps> = ({
             <>
                 <Button
                     type="ghost"
-                    caption="Back"
                     onClick={onBackClick}
                     className="p-0 is-italic"
                     icon={{ name: "arrow-left-short" }}
+                    caption={getLocalizedText("common.back")}
                 />
                 <div>
                     <span className="has-text-danger">
-                        Operation result with identifier &quot;{id}&quot; not found
+                        {getLocalizedText("results.resultNotFoundTemplate").format(id)}
                     </span>
                 </div>
             </>
@@ -78,7 +89,7 @@ const OperationResult: FC<OperationResultProps> = ({
     let sessionCaption = "";
 
     if (item.sessionId === appSession.id) {
-        sessionCaption = "Current";
+        sessionCaption = getLocalizedText("shared.sessionSelector.current");
     } else {
         const session = sessions.find(({ id }) => id === item.sessionId);
 
@@ -96,35 +107,36 @@ const OperationResult: FC<OperationResultProps> = ({
             <>
                 <Button
                     type="ghost"
-                    caption="Back"
                     onClick={onBackClick}
                     className="p-0 is-italic"
                     icon={{ name: "arrow-left-short" }}
+                    caption={getLocalizedText("common.back")}
                 />
                 <div>
                     <h4 className="subtitle is-4">
-                        Operation #{item.shortId} result
+                        {getLocalizedText("results.resultCaptionTemplate").format(item.shortId)}
                     </h4>
                     <Text
                         disabled
                         onValueChange={emptyFn}
                         defaultValue={sessionCaption}
-                        label={{ caption: "Session", horizontal: true }}
+                        label={{ caption: getLocalizedText("common.session"), horizontal: true }}
                     />
                     <Text
                         disabled
                         onValueChange={emptyFn}
-                        defaultValue={actionToDescriptionMap.get(item.action)}
-                        label={{ caption: "Action", horizontal: true }}
+                        defaultValue={getActionDescription(item.action)}
+                        label={{ caption: getLocalizedText("common.action"), horizontal: true }}
                     />
                     <Text
                         disabled
                         onValueChange={emptyFn}
                         defaultValue={item.createdOn.format("HH:mm:ss.SSS")}
-                        label={{ caption: "Created on", horizontal: true }}
+                        label={{ caption: getLocalizedText("common.createdOn"), horizontal: true }}
                     />
                     <span className="mr-1">
-                        The operation did not start due to an error:<br />
+                        {getLocalizedText("results.operationDidNotStarted")}:
+                        <br />
                     </span>
                     <span className="has-text-danger">
                         {item.error}
@@ -138,48 +150,57 @@ const OperationResult: FC<OperationResultProps> = ({
         <>
             <Button
                 type="ghost"
-                caption="Back"
                 onClick={onBackClick}
                 className="p-0 is-italic"
                 icon={{ name: "arrow-left-short" }}
+                caption={getLocalizedText("common.back")}
             />
-            <section>
+            <section role="results">
                 <h4 className="subtitle is-4">
-                    Operation #{item.shortId} result
+                    {getLocalizedText("results.resultCaptionTemplate").format(item.shortId)}
                 </h4>
                 <Text
+                    key={`${id}-session`}
+
                     disabled
                     onValueChange={emptyFn}
                     defaultValue={sessionCaption}
-                    label={{ caption: "Session", horizontal: true }}
+                    label={{ caption: getLocalizedText("common.session"), horizontal: true }}
                 />
                 <Text
+                    key={`${id}-action`}
+
                     disabled
                     onValueChange={emptyFn}
-                    defaultValue={actionToDescriptionMap.get(item.action)}
-                    label={{ caption: "Action", horizontal: true }}
+                    defaultValue={getActionDescription(item.action)}
+                    label={{ caption: getLocalizedText("common.action"), horizontal: true }}
                 />
                 <Text
+                    key={`${id}-startedOn`}
+
                     disabled
                     onValueChange={emptyFn}
                     defaultValue={item.startedOn.format("HH:mm:ss")}
-                    label={{ caption: "Started on", horizontal: true }}
+                    label={{ caption: getLocalizedText("results.startedOn"), horizontal: true }}
                 />
                 {!isNullOrUndefined(item.error) &&
                     <Multiline
+                        key={`${id}-error`}
+
                         rows={2}
                         disabled
                         onValueChange={emptyFn}
                         defaultValue={item.error}
-                        label={{ caption: "Error", horizontal: true }}
+                        label={{ caption: getLocalizedText("common.error"), horizontal: true }}
                     />
                 }
                 {!isNullOrUndefined(item.completedOn) &&
                     <Text
+                        key={`${id}-completedOn`}
                         disabled
                         onValueChange={emptyFn}
-                        defaultValue={`${item.completedOn.format("HH:mm:ss")} (${item.completionTime.value} ${item.completionTime.measurement})`}
-                        label={{ caption: "Completed on", horizontal: true }}
+                        defaultValue={`${item.completedOn.format("HH:mm:ss")} (${item.duration})`}
+                        label={{ caption: getLocalizedText("results.completedOn"), horizontal: true }}
                     />
                 }
                 {!isNullOrUndefined(item.result) &&
@@ -190,7 +211,7 @@ const OperationResult: FC<OperationResultProps> = ({
                                     <Icon
                                         name="x-circle"
                                         className="mr-2"
-                                    /> You have aborted the execution
+                                    /> {getLocalizedText("results.youHaveAbortedExecution")}
                                 </div>
                             </article>
                         }

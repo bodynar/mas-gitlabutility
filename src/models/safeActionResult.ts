@@ -39,6 +39,7 @@ export class SafeActionResult<TResult extends object, TError extends object> {
      * @param result Result of operation
      * @returns An instance of `SafeActionResult`
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static complete<TResult extends object>(result: TResult): SafeActionResult<TResult, any> {
         return new SafeActionResult({ result });
     }
@@ -48,6 +49,7 @@ export class SafeActionResult<TResult extends object, TError extends object> {
      * @param error Information about the error that occurred
      * @returns An instance of `SafeActionResult`
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static fail<TError extends object>(error: TError): SafeActionResult<any, TError> {
         return new SafeActionResult({ error });
     }

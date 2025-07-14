@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { getClassName, isNullOrUndefined } from "@bodynarf/utils";
@@ -7,22 +7,30 @@ import Icon from "@bodynarf/react.components/components/icon";
 import "./style.scss";
 
 import { Notification } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { getClassNameForType } from "@app/core";
-import { openCurrentErrorLogFile } from "@app/core/log";
+import { openErrorLogFile } from "@app/core/log";
 
 /** Notification component props */
-interface NotificationItemProps {
+type NotificationItemProps = {
     /** Notification to display */
     item: Notification;
 
     /** Hide notification handler */
     hide: (id: string) => void;
-}
+
+    /**
+     * Display warn message
+     * @param message Message to display
+     */
+    displayWarning: (message: string) => void;
+};
 
 /** Single displayable notification component */
-const NotificationItem = ({
+const NotificationItem: FC<NotificationItemProps> = ({
     item, hide,
-}: NotificationItemProps): JSX.Element => {
+    displayWarning,
+}) => {
     const className = getClassName([
         "notification",
         "has-text-wrapped",
@@ -30,7 +38,16 @@ const NotificationItem = ({
     ]);
 
     const onHideClick = useCallback(() => hide(item.id), [hide, item.id]);
-    const openErrorFile = useCallback(() => openCurrentErrorLogFile(), []);
+    const openErrorFile = useCallback(
+        () => {
+            const hasLogFile = openErrorLogFile(item.createdOn);
+
+            if (!hasLogFile) {
+                displayWarning(getLocalizedText("shared.logFileIsNotFound"));
+            }
+        },
+        [displayWarning, item.createdOn]
+    );
 
     useEffect(() => {
         if (!item.important) {
@@ -47,7 +64,7 @@ const NotificationItem = ({
             <button
                 className="delete"
                 onClick={onHideClick}
-                title="Hide notification"
+                title={getLocalizedText("app.notification.hideNotificationTitle")}
             >
             </button>
             {item.message}

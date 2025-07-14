@@ -1,14 +1,14 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { name, version } from "package.json";
 import { isNullish } from "@bodynarf/utils";
+
+import { name, version } from "package.json";
+
+import { getLocalizedText } from "@app/locale";
 import { appSession } from "@app/shared/values";
 
-/** Title on app name when user is blessed by random */
-const glitchyTitle = "Seems app is glitchy..";
-
 /** App brand container component */
-const Brand = (): JSX.Element => {
+const Brand: FC = () => {
     const isLucky = useMemo(() => Math.floor(Math.random() * 100) >= 90, []);
 
     const [strangeThingsCouldHappen, setStrangeThingsCouldHappen] = useState(false);
@@ -31,7 +31,7 @@ const Brand = (): JSX.Element => {
             >
                 <h2
                     className="title is-2 is-capitalized is-inline"
-                    title={strangeThingsCouldHappen ? glitchyTitle : undefined}
+                    title={strangeThingsCouldHappen ? getLocalizedText("app.brand.glitchyTitle") : undefined}
                 >
                     <span>
                         {name}
@@ -70,10 +70,10 @@ const AppSessionLabel: FC = () => {
         <>
             <br />
             <span className="has-text-grey mt-1 is-size-6 is-italic">
-                Session: <span
-                    className="is-family-monospace"
-                    style={{ cursor: "help" }}
+                {getLocalizedText("common.session")}: <span
                     title={appSession.id}
+                    style={{ cursor: "help" }}
+                    className="is-family-monospace"
                 >
                     {appSession.id.substring(0, 8)}
                 </span>

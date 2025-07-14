@@ -1,13 +1,14 @@
 import { isNullOrUndefined } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
-import { ActionResultState, CancellationToken, CheckNonActualTagsAction, CheckNonActualTagsActionError, CheckNonActualTagsActionErrorType, CheckNonActualTagsActionResult, DefaultBranch, NotActualTagInfo, ProcessStateEmitter } from "@app/models";
+import { ActionResultState, CancellationToken, CheckNonActualTagsAction, CheckNonActualTagsActionError, CheckNonActualTagsActionErrorType, CheckNonActualTagsActionResult, NotActualTagInfo, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { checkHasBranch, getBranchInfo, getTag } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
 
 /**
- * Check tags that not placed on a latest commit on master branch
+ * Check tags that not placed on a latest commit on branch
  * @param action Action configuration
  * @param cancellationToken Token for operation cancel
  * @param messageUpdateEventEmitter Process state event emitter
@@ -34,18 +35,18 @@ export const performCheckNonActualTagsAction: actionHandler = async (
 
         messageUpdateEventEmitter.trigger({
             state: index,
-            message: `Processing ${index + 1}\\${action.projects.length}`
+            message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${index + 1}`, `${action.projects.length}`),
         });
 
         const projectId = action.projects[index];
 
         try {
-            const hasBranch = await checkHasBranch(projectId, DefaultBranch.Master);
+            const hasBranch = await checkHasBranch(projectId, action.parameters.branch);
 
             if (!hasBranch) {
                 errors.push({
                     projectId,
-                    message: "Master branch not found",
+                    message: getLocalizedText("core.gitlab.branchNotFoundTemplate").format(action.parameters.branch),
                     type: CheckNonActualTagsActionErrorType.branchNotFound,
                 });
 
@@ -57,14 +58,14 @@ export const performCheckNonActualTagsAction: actionHandler = async (
             if (isNullOrUndefined(tagInfo)) {
                 errors.push({
                     projectId,
-                    message: "Tag not found",
+                    message: getLocalizedText("core.gitlab.tag.tagNotFound"),
                     type: CheckNonActualTagsActionErrorType.tagNotFound,
                 });
 
                 continue;
             }
 
-            const branchInfo = await getBranchInfo(projectId, DefaultBranch.Master);
+            const branchInfo = await getBranchInfo(projectId, action.parameters.branch);
 
             if (tagInfo.commitSha !== branchInfo.commitSha) {
                 nonActual.push({
@@ -83,7 +84,9 @@ export const performCheckNonActualTagsAction: actionHandler = async (
             if (error instanceof HttpError) {
                 errors.push({
                     projectId,
-                    message: `Error during execution, "${error.message}" ${error.response.status} (${error.response.statusText})`,
+                    message:
+                        getLocalizedText("core.gitlab.tag.errorDuringExecutionTemplate")
+                            .format(`"${error.message}" ${error.response.status} (${error.response.statusText})`),
                     type: CheckNonActualTagsActionErrorType.error,
                 });
 
@@ -92,7 +95,7 @@ export const performCheckNonActualTagsAction: actionHandler = async (
 
             errors.push({
                 projectId,
-                message: `Error during execution, ${error}`,
+                message: getLocalizedText("core.gitlab.tag.errorDuringExecutionTemplate").format(error),
                 type: CheckNonActualTagsActionErrorType.error,
             });
         }
@@ -106,6 +109,11 @@ export const performCheckNonActualTagsAction: actionHandler = async (
             errors: errors.sort((current, next) => current.type - next.type),
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`),
+    });
 
     let status = ActionResultState.success;
 

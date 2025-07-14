@@ -7,9 +7,11 @@ $animation-duration: 0.3s;
 
 html {
     height: 100vh;
+    overflow: hidden;
 }
 
-body, #root {
+body,
+#root {
     height: 100%;
 }
 
@@ -18,8 +20,14 @@ body, #root {
     transition-timing-function: $transition-function !important;
 }
 
-.bbr-dropdown label.bbr-dropdown__label span {
-    max-width: max-content;
+.bbr-dropdown {
+    .bbr-dropdown__label {
+        padding-left: calc(0.75em - 1px);
+
+        span {
+            max-width: max-content;
+        }
+    }
 }
 
 .has-text-wrapped {

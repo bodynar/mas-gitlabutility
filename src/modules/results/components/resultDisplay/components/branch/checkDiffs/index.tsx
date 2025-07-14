@@ -5,6 +5,7 @@ import Accordion from "@bodynarf/react.components/components/accordion";
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { CheckDiffsActionResult, CheckDiffsParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 import CopyToClipboardButton from "../../shared/copyToClipboardBtn";
@@ -26,27 +27,35 @@ const CheckDiffsResultDisplay: FC<CheckDiffsResultDisplayProps> = ({
 
     const onCopyResultClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Check-diff "${parameters.source}" => "${parameters.target}" results:\n\n${combinedData
+            getLocalizedText("results.branch.checkDiffs.caption")
+            + ` "${parameters.source}" => "${parameters.target}": `
+            + getLocalizedText("results.results")
+            + ":\n\n"
+            + combinedData
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
 
-                    return `- ${projectLink}: ${x.hasDiffs ? "there some diffs" : "no diffs"}`;
+                    return `- ${projectLink}: ${getLocalizedText(x.hasDiffs
+                        ? "results.branch.checkDiffs.hasDiffs" : "results.branch.checkDiffs.noDiffs"
+                    )}`;
                 })
                 .join("\n")
-            }`
         );
     }, [combinedData, getProjectJiraRef, parameters.source, parameters.target]);
 
     const onCopyErrorsClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Check-diff "${parameters.source}" => "${parameters.target}" errors:\n\n${result.errors
+            getLocalizedText("results.branch.checkDiffs.caption")
+            + ` "${parameters.source}" => "${parameters.target}": `
+            + getLocalizedText("results.errors")
+            + ":\n\n"
+            + result.errors
                 .map(([projectId, error]) => {
                     const projectLink = getProjectJiraRef(projectId);
 
-                    return `- ${projectLink}: Error "${error}"`;
+                    return `- ${projectLink}: ${getLocalizedText("common.error")} "${error}"`;
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.source, parameters.target, result.errors]);
 
@@ -56,33 +65,25 @@ const CheckDiffsResultDisplay: FC<CheckDiffsResultDisplayProps> = ({
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.source}
-                label={{ caption: "From", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.from"), horizontal: true }}
             />
             <Text
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.target}
-                label={{ caption: "To", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.to"), horizontal: true }}
             />
             <hr />
             <section>
                 <Accordion
-                    caption={`Diffs result (${combinedData.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.branch.checkDiffs.successCaption")} (${combinedData.length})`}
                 >
                     {combinedData.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No successfully completed &apos;check-diff&apos; operations! So sad! 😥
+                            {getLocalizedText("results.branch.checkDiffs.noSuccessCaption")}
                         </span>
                         : <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyResultClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {combinedData.map(x =>
                                     <ResultListItem
@@ -90,31 +91,30 @@ const CheckDiffsResultDisplay: FC<CheckDiffsResultDisplayProps> = ({
                                         isError={x.hasDiffs}
                                         projectId={x.projectId}
                                         project={projects.get(x.projectId)}
-                                        text={x.hasDiffs ? "Has diffs" : "No diffs"}
+                                        text={getLocalizedText(x.hasDiffs
+                                            ? "results.branch.checkDiffs.hasDiffs"
+                                            : "results.branch.checkDiffs.noDiffs"
+                                        )}
                                     />
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyResultClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>
 
                 <Accordion
                     defaultExpanded={result.errors.length > 0}
-                    caption={`Errors (${result.errors.length})`}
+                    caption={`${getLocalizedText("common.errors")} (${result.errors.length})`}
                 >
                     {result.errors.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No errors! Hooray! 🎉
+                            {getLocalizedText("results.noErrorsCaption")}
                         </span>
                         : <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyErrorsClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {result.errors.map(([projectId, error]) =>
                                     <ResultListItem
@@ -127,6 +127,10 @@ const CheckDiffsResultDisplay: FC<CheckDiffsResultDisplayProps> = ({
                                     />
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyErrorsClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>

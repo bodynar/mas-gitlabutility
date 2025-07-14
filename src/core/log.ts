@@ -1,5 +1,7 @@
 import { ErrorInfo } from "react";
 
+import { Moment } from "moment";
+
 /**
  * Log unhandled error
  * @param error Unhandled error
@@ -9,7 +11,10 @@ export const logError = (error: Error, errorInfo: ErrorInfo): void => {
     window.electron.log.error(error, errorInfo);
 };
 
-/** Open current log file */
-export const openCurrentErrorLogFile = (): void => {
-    window.electron.log.open();
+/**
+ * Open log file
+ * @param date Log file date
+ */
+export const openErrorLogFile = (date: Moment): boolean => {
+    return window.electron.log.open(date.format("YYYY-MM-DD"));
 };

@@ -1,4 +1,4 @@
-import { Group, OperationResult, Project } from "@app/models";
+import { ActionResult, Group, OperationResult, Project, ProjectViewMode } from "@app/models";
 
 /** Gitlab integration state */
 export interface GitlabState {
@@ -15,11 +15,14 @@ export interface GitlabState {
     selectedProjects: Array<number>;
 
     /** Results of the operations performed */
-    operationsResults: Array<OperationResult<any>>;
+    operationsResults: Array<OperationResult<ActionResult>>;
 
     /** Current search query */
     searchValue: string;
 
     /** Warning about outdated version shown */
     versionWarningShown: boolean;
+
+    /** Identifier of current view mode for selectable projects component */
+    currentProjectViewMode: ProjectViewMode;
 }

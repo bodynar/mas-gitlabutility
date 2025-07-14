@@ -34,6 +34,9 @@ export interface OperationResult<TResult extends ActionResult> {
         value: number;
     };
 
+    /** Operation duration caption */
+    duration?: string;
+
     /** Error that occurred during the operation */
     error?: string;
 
@@ -41,7 +44,7 @@ export interface OperationResult<TResult extends ActionResult> {
     result?: TResult;
 
     /** Action parameters */
-    parameters?: any;
+    parameters?: unknown;
 
     /** Session identifier when result was created */
     sessionId: string;

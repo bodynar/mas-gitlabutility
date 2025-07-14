@@ -1,18 +1,19 @@
-import { useCallback, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { connect } from "react-redux";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 import { Notification } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { GlobalAppState } from "@app/store";
-import { hideAllNotifications, hideNotification } from "@app/store/notificator";
+import { displayWarn, hideAllNotifications, hideNotification } from "@app/store/notificator";
+import { appSession } from "@app/shared/values";
 
 import "./style.scss";
 
 import NotificationItem from "../components/item";
-import { appSession } from "@app/shared/values";
 
 /** Props of NotificationProvider component */
-interface NotificationProviderProps {
+type NotificationProviderProps = {
     /** Displayable notifications */
     notifications: Array<Notification>;
 
@@ -21,13 +22,20 @@ interface NotificationProviderProps {
 
     /** Hide all visible notifications */
     hideAll: () => void;
-}
+
+    /**
+     * Display warn message
+     * @param message Message to display
+     */
+    displayWarning: (message: string) => void;
+};
 
 /** Container with displayable notifications */
-const NotificationProvider = ({
+const NotificationProvider: FC<NotificationProviderProps> = ({
     notifications,
     hideNotification, hideAll,
-}: NotificationProviderProps): JSX.Element => {
+    displayWarning,
+}) => {
     const hideAllNotifications = useCallback(() => hideAll(), [hideAll]);
     const items = useMemo(() => notifications.filter(({ sessionId }) => sessionId === appSession.id), [notifications]);
 
@@ -37,29 +45,33 @@ const NotificationProvider = ({
         >
             {items.length >= 3 &&
                 <CSSTransition
-                    timeout={250}
                     key="notification-cleaner"
+
+                    timeout={250}
                     classNames="notification-cleaner"
                 >
                     <span
                         onClick={hideAllNotifications}
                         className="notification-cleaner"
-                        title="Dismiss all notifications"
+                        title={getLocalizedText("app.notification.dismissAllTitle")}
                     >
-                        Dismiss all
+                        {getLocalizedText("app.notification.dismissAll")}
                     </span>
                 </CSSTransition>
             }
             {items.map(x =>
                 <CSSTransition
                     key={x.id}
+
                     timeout={250}
                     classNames="notification"
                 >
                     <NotificationItem
                         key={x.id}
+
                         item={x}
                         hide={hideNotification}
+                        displayWarning={displayWarning}
                     />
                 </CSSTransition>
             )}
@@ -75,5 +87,6 @@ export default connect(
     {
         hideNotification,
         hideAll: hideAllNotifications,
+        displayWarning: displayWarn
     }
 )(NotificationProvider);

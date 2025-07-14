@@ -1,15 +1,24 @@
-.bbr-accordion {
-    .message-body__content {
-        max-height: 12.5rem;
-        overflow: auto;
-    }
+section[role="results"] {
+    .bbr-accordion .message-body {
+        padding-right: 0;
 
-    .top-right-btn-wrapper {
+        overflow: hidden;
         position: relative;
 
-        & > div {
-            position: absolute;
-            right: 2.5%;
+        .message-body__content {
+            padding-right: 1.5rem;
+            max-height: 12.5rem;
+
+            overflow-y: auto;
+            position: relative;
+
+            display: flex;
+            justify-content: space-between;
+            column-gap: 0.75rem;
+
+            ul {
+                padding-bottom: 1rem;
+            }
         }
     }
 }

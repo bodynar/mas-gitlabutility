@@ -2,13 +2,15 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { connect } from "react-redux";
 
 import { isNullOrEmpty } from "@bodynarf/utils";
-import { ElementSize } from "@bodynarf/react.components";
+import { ElementColor, ElementSize } from "@bodynarf/react.components";
 import Button from "@bodynarf/react.components/components/button/component";
-import Text from "@bodynarf/react.components/components/primitives/text";
+import CheckBox from "@bodynarf/react.components/components/primitives/checkbox";
 import Search from "@bodynarf/react.components/components/search/component";
+import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { Group } from "@app/models";
 import { checkHasTemplateDiff, getSettingsDiff } from "@app/core";
+import { getLocalizedText } from "@app/locale";
 import { GlobalAppState } from "@app/store";
 import { AppSettings, SettingsUpdatePair, favoriteGroup, resetTemplates, saveSettings } from "@app/store/app";
 import { checkVersion, loadGroups } from "@app/store/gitlab";
@@ -125,7 +127,7 @@ const SettingsModule: FC<SettingsModuleProps> = ({
     // #region Change handlers
 
     const onSettingChange = useCallback(
-        (settingName: keyof AppSettings, value: string) => setNewSettings(s => ({
+        (settingName: keyof AppSettings, value: string | boolean) => setNewSettings(s => ({
             ...s,
             [settingName]: value
         })),
@@ -137,6 +139,7 @@ const SettingsModule: FC<SettingsModuleProps> = ({
     const onTagTemplateChange = useCallback((value?: string) => onSettingChange("releaseTagNameTemplate", value), [onSettingChange]);
     const onMrNameChange = useCallback((value?: string) => onSettingChange("mergeRequestNameTemplate", value), [onSettingChange]);
     const onReleaseMrNameChange = useCallback((value?: string) => onSettingChange("releaseMergeRequestNameTemplate", value), [onSettingChange]);
+    const onShowLoadingStateAtTaskbarChange = useCallback((value = false) => onSettingChange("showLoadingStateAtTaskbar", value), [onSettingChange]);
 
     // #endregion
 
@@ -148,18 +151,18 @@ const SettingsModule: FC<SettingsModuleProps> = ({
             <div>
                 <Button
                     type="info"
-                    icon={{ name: isViewMode ? "pencil-fill" : "eye-fill" }}
-                    title={isViewMode ? "Switch to edit mode" : "Switch to view mode"}
                     onClick={onChangeModeBtnClick}
+                    icon={{ name: isViewMode ? "pencil-fill" : "eye-fill" }}
+                    title={getLocalizedText(isViewMode ? "settings.viewMode.toEdit" : "settings.viewMode.toView")}
                 />
                 {!isViewMode &&
                     <Button
                         type="success"
-                        caption="Save"
                         className="ml-2"
                         disabled={!hasChanges}
                         onClick={onSaveBtnClick}
-                        title={!hasChanges ? "No changes were made" : undefined}
+                        caption={getLocalizedText("common.save")}
+                        title={!hasChanges ? getLocalizedText("settings.noChanges") : undefined}
                     />
                 }
             </div>
@@ -169,7 +172,7 @@ const SettingsModule: FC<SettingsModuleProps> = ({
             >
                 <section role="settings-connection">
                     <h5 className="subtitle is-5">
-                        Connection settings
+                        {getLocalizedText("settings.applicationSettings.caption")}
                     </h5>
                     <div className="columns">
                         <div className="column">
@@ -178,20 +181,40 @@ const SettingsModule: FC<SettingsModuleProps> = ({
                                 disabled={isViewMode}
                                 onValueChange={onApiChange}
                                 defaultValue={settings.apiUrl}
-                                label={{ caption: "Gitlab api URL", horizontal: true }}
-                                placeholder={isViewMode ? undefined : "Gitlab site URL, like https://git.yoursite.com"}
+                                placeholder={getLocalizedText("settings.applicationSettings.apiUrlPlaceholder")}
+                                label={{ caption: getLocalizedText("settings.applicationSettings.apiUrlLabel"), horizontal: true }}
                             />
                         </div>
                     </div>
                     <div className="columns">
                         <div className="column">
                             <Text
-                                key={`${isViewMode}`}
+                                key={`${isViewMode}-${settings.gitlabAuthToken}`}
                                 disabled={isViewMode}
                                 onValueChange={onTokenChange}
                                 defaultValue={settings.gitlabAuthToken}
-                                label={{ caption: "Gitlab auth token", horizontal: true }}
-                                placeholder={isViewMode ? undefined : "Personal auth token"}
+                                placeholder={getLocalizedText("settings.applicationSettings.gitlabTokenPlaceholder")}
+                                label={{ caption: getLocalizedText("settings.applicationSettings.gitlabTokenLabel"), horizontal: true }}
+                            />
+                        </div>
+                    </div>
+                    <div className="columns">
+                        <div className="column">
+                            <CheckBox
+                                key={`${isViewMode}`}
+
+                                isFormLabel
+                                hasBackgroundColor
+                                fixBackgroundColor
+                                disabled={isViewMode}
+                                style={ElementColor.Link}
+                                onValueChange={onShowLoadingStateAtTaskbarChange}
+                                defaultValue={settings.showLoadingStateAtTaskbar}
+                                label={{
+                                    caption: getLocalizedText("settings.applicationSettings.taskbarLoadingStateLabel"),
+                                    horizontal: true,
+                                    title: getLocalizedText("settings.applicationSettings.taskbarLoadingStateTitle"),
+                                }}
                             />
                         </div>
                     </div>
@@ -199,21 +222,22 @@ const SettingsModule: FC<SettingsModuleProps> = ({
                 <hr />
                 <section role="action settings">
                     <h5 className="subtitle is-5">
-                        Actions configuration (templates)
+                        {getLocalizedText("settings.templates.caption")}
                     </h5>
                     <div className="columns">
                         <div className="column">
                             <Text
                                 key={`${isViewMode}-tag-name-${resetCount}`}
+
                                 disabled={isViewMode}
                                 onValueChange={onTagTemplateChange}
                                 defaultValue={settings.releaseTagNameTemplate}
-                                placeholder={isViewMode ? undefined : "Template name for release tag"}
-                                label={{ caption: "Tag", horizontal: true }}
+                                label={{ caption: getLocalizedText("settings.templates.tagLabel"), horizontal: true }}
+                                placeholder={isViewMode ? undefined : getLocalizedText("settings.templates.tagPlaceholder")}
                                 hint={isNullOrEmpty(newSettings.releaseTagNameTemplate)
                                     ? undefined
                                     : {
-                                        content: `Example: ${newSettings.releaseTagNameTemplate}${today.getFullYear()}.1.0`,
+                                        content: getLocalizedText("settings.templates.tagHintTemplate").format(newSettings.releaseTagNameTemplate, `${today.getFullYear()}`),
                                         italic: true,
                                     }
                                 }
@@ -228,12 +252,12 @@ const SettingsModule: FC<SettingsModuleProps> = ({
                                 disabled={isViewMode}
                                 onValueChange={onMrNameChange}
                                 defaultValue={settings.mergeRequestNameTemplate}
-                                placeholder={isViewMode ? undefined : "Template name for stream merge"}
-                                label={{ caption: "Stream merge", horizontal: true }}
+                                label={{ caption: getLocalizedText("settings.templates.streamMergeRequestLabel"), horizontal: true }}
+                                placeholder={isViewMode ? undefined : getLocalizedText("settings.templates.streamMergeRequestPlaceholder")}
                                 hint={isNullOrEmpty(newSettings.mergeRequestNameTemplate)
                                     ? undefined
                                     : {
-                                        content: `Example: ${newSettings.mergeRequestNameTemplate.format("test", "develop")}`,
+                                        content: getLocalizedText("settings.templates.simpleExample").format(`${newSettings.mergeRequestNameTemplate.format("test", "develop")}`),
                                         italic: true,
                                     }
                                 }
@@ -245,15 +269,16 @@ const SettingsModule: FC<SettingsModuleProps> = ({
                         <div className="column">
                             <Text
                                 key={`${isViewMode}-release-mr-name-${resetCount}`}
+
                                 disabled={isViewMode}
                                 onValueChange={onReleaseMrNameChange}
                                 defaultValue={settings.releaseMergeRequestNameTemplate}
-                                placeholder={isViewMode ? undefined : "Template name for release merge"}
-                                label={{ caption: "Release merge", horizontal: true }}
+                                label={{ caption: getLocalizedText("settings.templates.releaseMergeRequestLabel"), horizontal: true }}
+                                placeholder={isViewMode ? undefined : getLocalizedText("settings.templates.releaseMergeRequestPlaceholder")}
                                 hint={isNullOrEmpty(newSettings.releaseMergeRequestNameTemplate)
                                     ? undefined
                                     : {
-                                        content: `Example: ${newSettings.releaseMergeRequestNameTemplate.format(`v${today.getFullYear()}.1.0`)}`,
+                                        content: getLocalizedText("settings.templates.simpleExample").format(`${newSettings.releaseMergeRequestNameTemplate.format(`v${today.getFullYear()}.1.0`)}`),
                                         italic: true,
                                     }
                                 }
@@ -261,12 +286,11 @@ const SettingsModule: FC<SettingsModuleProps> = ({
                         </div>
                     </div>
 
-                    {isViewMode &&
+                    {isViewMode && hasTemplateChange &&
                         <Button
                             type="white"
-                            caption="Reset to default"
                             onClick={onResetTemplatesClick}
-                            disabled={!hasTemplateChange}
+                            caption={getLocalizedText("settings.templates.resetToDefaultButton")}
                         />
                     }
                 </section>
@@ -274,41 +298,37 @@ const SettingsModule: FC<SettingsModuleProps> = ({
             <hr />
             <section>
                 <h5 className="subtitle is-5">
-                    Favorite groups {settings.preloadGroupIds.length > 0 && groups.length > 0
+                    {getLocalizedText("settings.favoriteGroups.caption")} {settings.preloadGroupIds.length > 0 && groups.length > 0
                         && `(${settings.preloadGroupIds.length}/${groups.length})`
                     }
                 </h5>
-                {(isNullOrEmpty(settings.gitlabAuthToken) || isNullOrEmpty(settings.apiUrl)) &&
+                {isNullOrEmpty(settings.gitlabAuthToken) &&
                     <article className="message is-warning">
                         <div className="message-body has-text-weight-bold">
-                            Please, configure connection settings first
+                            {getLocalizedText("settings.favoriteGroups.noTokenSetError")}
                         </div>
                     </article>
                 }
-                {!isNullOrEmpty(settings.gitlabAuthToken) && !isNullOrEmpty(settings.apiUrl) &&
+                {!isNullOrEmpty(settings.gitlabAuthToken) &&
                     <>
-                        <p className="is-italic mb-4">
-                            Choose groups to preload.
-                            <br />
-                            Selected groups will be loaded (with nested projects) on application start and used in main page
+                        <p className="is-italic mb-4 has-text-wrapped">
+                            {getLocalizedText("settings.favoriteGroups.blockHint")}
                         </p>
                         <div className="mb-4">
                             <Search
                                 searchType="byTyping"
                                 size={ElementSize.Small}
-                                caption="Search by name"
                                 onSearch={setSearchQuery}
+                                caption={getLocalizedText("settings.favoriteGroups.searchCaption")}
                             />
                         </div>
                         <ul
-                            key={`${settings.apiUrl}-${settings.gitlabAuthToken}`}
+                            key={`${settings.gitlabAuthToken}`}
                             role="preload-group-list"
                         >
                             {filteredGroups.length === 0 && groups.length !== 0 &&
                                 <p className="has-text-grey has-text-wrapped is-italic">
-                                    No groups found with that name
-                                    {`\n`}
-                                    {`¯\\_(ツ)_/¯`}
+                                    {getLocalizedText("settings.favoriteGroups.noItemsFoundBySearch")}
                                 </p>
                             }
                             {filteredGroups.length > 0 &&
@@ -329,15 +349,15 @@ const SettingsModule: FC<SettingsModuleProps> = ({
             <hr />
             <section>
                 <h5 className="subtitle is-5">
-                    Additional branches
+                    {getLocalizedText("settings.additionalBranches.caption")}
                 </h5>
 
-                <p className="is-italic mb-4">
-                    You can configure extra branches to use in merge action
+                <p className="is-italic mb-4 has-text-wrapped">
+                    {getLocalizedText("settings.additionalBranches.blockHint")}
                     <br />
-                    Only unique branch names will be saved
-                    <br />
-                    <span className="has-text-weight-bold">NOTE</span>: Branch name is case sensitive
+                    <span className="has-text-weight-bold">
+                        {getLocalizedText("settings.additionalBranches.noteCaption")}
+                    </span>: {getLocalizedText("settings.additionalBranches.blockNote")}
                 </p>
 
                 <ExtraBranchList />

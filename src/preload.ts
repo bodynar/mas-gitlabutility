@@ -25,8 +25,8 @@ contextBridge.exposeInMainWorld("electron", {
         error(error: Error, errorInfo: ErrorInfo): void {
             ipcRenderer.send(ipcMessages.log.write, error, errorInfo);
         },
-        open(): void {
-            ipcRenderer.send(ipcMessages.log.open);
+        open(date: string): boolean {
+            return ipcRenderer.sendSync(ipcMessages.log.open, date);
         },
     },
     app: {
@@ -42,6 +42,9 @@ contextBridge.exposeInMainWorld("electron", {
                 ipcRenderer.send(ipcMessages.app.closeAfterSave);
             });
         },
+        updateLoadingState(state: number, important = false): void {
+            ipcRenderer.send(ipcMessages.app.updateLoadingState, state, important);
+        }
     }
 });
 

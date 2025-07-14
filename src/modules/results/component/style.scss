@@ -9,4 +9,8 @@ li[role="result-item"] {
     &:hover span[role="navigation"] {
         opacity: 1;
     }
+
+    .bbr-icon i.has-text-warn--md {
+        color: #f5b200;
+    }
 }

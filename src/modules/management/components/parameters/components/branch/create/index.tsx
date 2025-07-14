@@ -1,79 +1,107 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback } from "react";
 
 import { isNullOrEmpty } from "@bodynarf/utils";
+import { useMount } from "@bodynarf/react.components";
 import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
 import Text from "@bodynarf/react.components/components/primitives/text/component";
+import CheckBox from "@bodynarf/react.components/components/primitives/checkbox";
 
 import { BaseParametersComponentProps, CreateBranchParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
-/** CreateBranch parameters configuration props*/
-type CreateBranchParametersProps = BaseParametersComponentProps<CreateBranchParameters>;
+import { createValidationConfig, ParametersValidationConfigProvider } from "../../..";
 
-const CreateBranchParametersConfiguration: FC<CreateBranchParametersProps> = ({
+/** Props of `CreateBranchParametersConfiguration` */
+type CreateBranchParametersConfigurationProps = BaseParametersComponentProps<CreateBranchParameters>;
+
+/** CreateBranch parameters configuration */
+const CreateBranchParametersConfiguration: FC<CreateBranchParametersConfigurationProps> = ({
     branches,
-    parameters, setParameters,
-    setCanExecute, setError,
+    parameters,
+    setCanExecute,
+    onValuesChange, getValidationState, getShouldDisplayRequiredMark,
 }) => {
     const selectedFrom = branches.find(({ value }) => parameters?.source === value);
 
     const onSourceBranchSelected = useCallback(
-        (value?: SelectableItem) => {
-            setParameters({
-                ...parameters,
-                source: value?.value,
-            });
-        }, [parameters, setParameters]
+        (value?: SelectableItem) => onValuesChange([{ key: "source", value: value?.value, }]),
+        [onValuesChange]
     );
 
     const onNameChange = useCallback(
-        (branchName?: string) => {
-            setParameters({
-                ...parameters,
-                branchName,
-            });
-        }, [parameters, setParameters]
+        (branchName?: string) => onValuesChange([{ key: "branchName", value: branchName, }]),
+        [onValuesChange]
     );
 
-    useEffect(() => {
-        if (isNullOrEmpty(parameters?.source) || isNullOrEmpty(parameters?.branchName)) {
-            setCanExecute(false);
-            return;
-        }
+    const onSaveAsAdditionalBranchChange = useCallback(
+        (value: boolean) => onValuesChange([{ key: "saveAsAdditionalBranch", value }]),
+        [onValuesChange]
+    );
 
-        if (parameters.source === parameters.branchName) {
-            setCanExecute(false);
-            setError("Branch name cannot have same name as source branch");
+    useMount(() => {
+        if (parameters.source === parameters.branchName
+            || isNullOrEmpty(parameters.branchName)
+        ) {
             return;
         }
 
         setCanExecute(true);
-    }, [parameters, setCanExecute, setError]);
+    });
 
     return (
-        <section role="CreateBranch-parameters">
-            <div className="columns">
-                <div className="column">
-                    <Dropdown
-                        hideOnOuterClick
-                        placeholder="From"
-                        value={selectedFrom}
-                        items={branches}
-                        onSelect={onSourceBranchSelected}
-                        label={{ caption: "Source branch", horizontal: false, }}
-                    />
-                </div>
-            </div>
-            <div className="columns">
-                <div className="column">
-                    <Text
-                        onValueChange={onNameChange}
-                        defaultValue={parameters?.branchName}
-                        label={{ caption: "Branch name", horizontal: false }}
-                    />
-                </div>
-            </div>
+        <section role="parameters">
+            <Dropdown
+                hideOnOuterClick
+                items={branches}
+                value={selectedFrom}
+                onSelect={onSourceBranchSelected}
+                placeholder={getLocalizedText("parameters.from")}
+                label={{ caption: getLocalizedText("parameters.from"), horizontal: true, }}
+            />
+            <Text
+                onValueChange={onNameChange}
+                defaultValue={parameters?.branchName}
+                validationState={getValidationState("branchName")}
+                label={{
+                    caption: getLocalizedText("parameters.branch.branchName"),
+                    horizontal: true,
+                    className: getShouldDisplayRequiredMark("branchName") ? "is-required-visible" : null,
+                    title: getShouldDisplayRequiredMark("branchName") ? getLocalizedText("management.parameters.parameterIsNotSet") : null,
+                }}
+            />
+            <CheckBox
+                isFormLabel
+                onValueChange={onSaveAsAdditionalBranchChange}
+                defaultValue={parameters?.saveAsAdditionalBranch ?? false}
+                label={{ caption: getLocalizedText("parameters.branch.create.saveBranchAsAdditionalBranch"), horizontal: true }}
+            />
         </section>
     );
 };
 
 export default CreateBranchParametersConfiguration;
+
+/**
+ * Get current component parameters validation config provider fn
+ * @returns Validator config provider fn
+ */
+export const getValidationConfig: ParametersValidationConfigProvider<CreateBranchParameters> = () => createValidationConfig([
+    [
+        "branchName", [
+            ({ branchName }) => isNullOrEmpty(branchName)
+                ? getLocalizedText("management.parameters.branchNameCannotBeEmpty")
+                : null
+        ]
+    ],
+    [
+        null, [
+            ({ source, branchName }) => source.toLowerCase().trim() === branchName?.toLowerCase().trim()
+                ? getLocalizedText("management.parameters.branch.create.sourceBranchNameSameAsTarget")
+                : null,
+            ({ branchName, saveAsAdditionalBranch }, { branches }) => saveAsAdditionalBranch
+                && branches.map(({ value }) => value.toLocaleLowerCase()).includes(branchName?.toLocaleLowerCase())
+                ? getLocalizedText("management.parameters.branch.create.branchIsAlreadyPresentedInExtraBranchListTemplate").format(branchName)
+                : null
+        ]
+    ]
+]);

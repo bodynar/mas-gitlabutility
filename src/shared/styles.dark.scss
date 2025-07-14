@@ -1,0 +1,273 @@
+$font-color: #f0f0f0;
+$background-color: #1c1c1c;
+$box-background-color: #252525;
+$input-background-color: #2a2a2a;
+$input-border-color: #464646;
+$icon-hover-color: rgb(141, 162, 255);
+
+.app.app--theme-dark {
+    background-color: $background-color;
+    color: $font-color;
+
+    .app-menu {
+        .menu-list .is-active {
+            color: $font-color;
+        }
+    }
+
+    .box,
+    .dropdown-content {
+        background-color: $box-background-color;
+        color: $font-color;
+
+        box-shadow:
+            0 0.5em 1em -0.125em rgba(245, 245, 245, 0.1),
+            0 0px 0 1px rgba(245, 245, 245, 0.02);
+    }
+
+    .bbr-dropdown-item {
+        color: $font-color;
+
+        &:hover:not(.is-active) {
+            background-color: rgba(255, 255, 255, 0.125);
+            color: $font-color;
+        }
+    }
+
+    .title {
+        color: $font-color;
+    }
+
+    .bbr-dropdown {
+        .bbr-icon:hover {
+            color: $icon-hover-color !important;
+        }
+    }
+
+    .subtitle,
+    p:not(.help) {
+        color: #999999;
+    }
+
+    .menu-list a {
+        color: $font-color;
+
+        &:hover:not(.is-active) {
+            background-color: rgba(255, 255, 255, 0.125);
+        }
+
+        &.is-active {
+            background-color: rgb(72, 95, 199, 0.5);
+        }
+    }
+
+    hr {
+        border-color: $input-border-color;
+    }
+
+    .select select,
+    .textarea,
+    .input,
+    .bbr-dropdown__label {
+        background-color: $input-background-color;
+        color: $font-color;
+
+        &:not(:focus):not(.is-danger) {
+            border-color: $input-border-color;
+        }
+
+        &::placeholder,
+        &[disabled] {
+            color: #777777;
+        }
+
+        &:focus {
+            border-color: #6ea8fe;
+        }
+    }
+
+    .label,
+    .is-checkradio ~ label {
+        color: #bbbbbb;
+    }
+
+    .bbr-button {
+        &.is-white {
+            background-color: $input-background-color;
+            color: $font-color;
+            border-color: $input-border-color;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.125);
+            }
+            &:focus {
+                box-shadow: none;
+            }
+        }
+
+        &.is-success {
+            filter: brightness(0.85);
+
+            transition-property: filter;
+
+            &:hover {
+                filter: brightness(1);
+            }
+        }
+
+        &.is-primary.is-outlined:hover,
+        &.is-primary.is-outlined.is-hovered,
+        &.is-primary.is-outlined:focus,
+        &.is-primary.is-outlined.is-focused {
+            background-color: hsl(171deg 100% 22.83%);
+            border-color: hsl(171deg 100% 22.83%);
+        }
+
+        &.is-danger.is-outlined:hover,
+        &.is-danger.is-outlined.is-hovered,
+        &.is-danger.is-outlined:focus,
+        &.is-danger.is-outlined.is-focused {
+            background-color: hsl(348deg 57.82% 34.43%);
+            border-color: hsl(348deg 57.82% 34.43%);
+        }
+
+        &.is-ghost {
+            &[disabled] {
+                background-color: transparent;
+            }
+
+            color: rgb(141, 162, 255);
+        }
+
+        &.is-outlined .bbr-icon:hover,
+        &.is-ghost .bbr-icon:hover {
+            color: $font-color;
+        }
+    }
+
+    .message:not(.bbr-accordion) {
+        &.is-success {
+            background-color: #263b2e;
+
+            .message-body {
+                color: #78e2b9;
+                border-color: #305b44;
+
+                p {
+                    color: #d8fce9;
+                }
+            }
+        }
+
+        &.is-warning {
+            background-color: #3a2e1f;
+
+            .message-body {
+                color: #f6c75c;
+                border-color: #5e4322;
+
+                p {
+                    color: #f4e2b6;
+                }
+            }
+        }
+
+        &.is-danger {
+            background-color: #3b1f1f;
+
+            .message-body {
+                color: #ff6b6b;
+                border-color: #712e2e;
+
+                p {
+                    color: #ffd6d6;
+                }
+            }
+        }
+
+        &.is-info {
+            background-color: #1f2e3b;
+
+            .message-body {
+                color: #64baff;
+                border-color: #345770;
+
+                p {
+                    color: #cbe7ff;
+                }
+            }
+        }
+    }
+
+    .bbr-accordion.message {
+        background-color: $input-background-color;
+
+        span {
+            color: $font-color;
+        }
+
+        .bbr-anchor {
+            color: #bbbbbb;
+        }
+    }
+
+    .notification {
+        &.is-success {
+            background-color: #263b2e;
+
+            color: #d8fce9;
+            border: 1px solid rgba(#d8fce9, 0.125);
+        }
+
+        &.is-warning {
+            background-color: #3a2e1f;
+
+            color: #f4e2b6;
+            border: 1px solid rgba(#f4e2b6, 0.125);
+        }
+
+        &.is-danger {
+            background-color: #3b1f1f;
+
+            color: #ffd6d6;
+            border: 1px solid rgba(#ffd6d6, 0.125);
+        }
+
+        &.is-info {
+            background-color: #1f2e3b;
+
+            color: #cbe7ff;
+            border: 1px solid rgba(#cbe7ff, 0.125);
+        }
+    }
+
+    .notification-cleaner {
+        background-color: $box-background-color;
+        color: $font-color;
+        border-color: rgba($font-color, 0.5);
+
+        &:hover {
+            border-color: $font-color;
+        }
+    }
+
+    .progress-bar {
+        background-color: #2b2b2b;
+
+        &__fill {
+            background-color: #3273dc;
+        }
+    }
+
+    [data-dd-identifier="actions"] {
+        .bbr-icon.bi-pencil.has-text-link {
+            color: $icon-hover-color !important;
+        }
+    }
+
+    .bbr-paginator {
+        a:not(.is-disabled) {
+            color: $font-color;
+        }
+    }
+}

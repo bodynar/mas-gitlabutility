@@ -1,12 +1,12 @@
-import { Actions, DefaultBranch, ParametrizedAction } from "@app/models";
+import { Actions, ParametrizedAction } from "@app/models";
 
 /** CheckDiffs action parameters */
 export interface CheckDiffsActionConfig {
     /** Source branch name */
-    source: DefaultBranch;
+    source: string;
 
     /** Target branch name */
-    target: DefaultBranch;
+    target: string;
 }
 
 /** CheckDiffs action */
@@ -27,8 +27,8 @@ export class CheckDiffsAction extends ParametrizedAction<CheckDiffsActionConfig>
 /** Parameters for check diffs action */
 export interface CheckDiffsParameters {
     /** Source branch name */
-    source: DefaultBranch;
+    source: string;
 
     /** Target branch name */
-    target: DefaultBranch;
+    target: string;
 }

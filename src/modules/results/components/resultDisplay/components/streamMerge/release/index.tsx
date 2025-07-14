@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { FC, useCallback } from "react";
 
 import { emptyFn } from "@bodynarf/utils";
 import { ElementColor } from "@bodynarf/react.components";
@@ -8,6 +8,7 @@ import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { ReleaseParameters, ReleaseActionResult } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 
@@ -19,19 +20,26 @@ import AnchorToProject from "../../shared/anchorToProject";
 type ReleaseResultDisplayProps = ActionResultDisplayProps<ReleaseActionResult, ReleaseParameters>;
 
 /** Release operation result display component */
-const ReleaseResultDisplay = ({
+const ReleaseResultDisplay: FC<ReleaseResultDisplayProps> = ({
     result, parameters, projects, getProjectJiraRef
-}: ReleaseResultDisplayProps): JSX.Element => {
+}) => {
     const onCopyClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Created tags:\n\n${result.createdTags
+            getLocalizedText("results.streamMerge.release.createdTags")
+            + ":\n\n"
+            + result.createdTags
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
-
-                    return `- ${projectLink}: Tag "[${parameters.version}|${x.link}]"${x.markOnly ? " (Without MR)" : ""}`;
+                    return getLocalizedText("results.streamMerge.release.createdTagItemTemplate").format(
+                        projectLink,
+                        parameters.version,
+                        x.link,
+                        x.markOnly
+                            ? "(" + getLocalizedText("results.streamMerge.release.withoutMr") + ")"
+                            : ""
+                    );
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.version, result.createdTags]);
 
@@ -40,8 +48,20 @@ const ReleaseResultDisplay = ({
             <Text
                 disabled
                 onValueChange={emptyFn}
+                defaultValue={parameters.testBranch}
+                label={{ caption: getLocalizedText("parameters.streamMerge.release.testBranch"), horizontal: true }}
+            />
+            <Text
+                disabled
+                onValueChange={emptyFn}
+                defaultValue={parameters.productionBranch}
+                label={{ caption: getLocalizedText("parameters.streamMerge.release.productiveBranch"), horizontal: true }}
+            />
+            <Text
+                disabled
+                onValueChange={emptyFn}
                 defaultValue={parameters.version}
-                label={{ caption: "Version", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.streamMerge.release.version"), horizontal: true }}
             />
             <CheckBox
                 disabled
@@ -50,28 +70,26 @@ const ReleaseResultDisplay = ({
                 onValueChange={emptyFn}
                 style={ElementColor.Link}
                 defaultValue={parameters.setVersionTagAfter}
-                label={{ caption: "Set version tag", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.streamMerge.release.setVersionTagOnMergeCommit"), horizontal: true }}
+            />
+            <Text
+                disabled
+                onValueChange={emptyFn}
+                defaultValue={parameters.mergeRequestName}
+                label={{ caption: getLocalizedText("parameters.requestName"), horizontal: true }}
             />
             {parameters.setVersionTagAfter &&
                 <Accordion
-                    caption={`Created tags (${result.createdTags.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.streamMerge.release.createdTags")} (${result.createdTags.length})`}
                 >
                     {result.createdTags.length === 0 &&
                         <p className="is-italic has-text-grey pb-2">
-                            Tag&apos;s were&apos;nt created! So sad! 😥
+                            {getLocalizedText("results.streamMerge.release.noCreatedTags")}
                         </p>
                     }
                     {result.createdTags.length > 0 &&
                         <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {result.createdTags.map(x =>
                                     <li
@@ -81,21 +99,26 @@ const ReleaseResultDisplay = ({
                                             <AnchorToProject
                                                 projectId={x.projectId}
                                                 project={projects.get(x.projectId)}
-                                            />: Tag &quot;<Anchor
+                                            />: {getLocalizedText("results.streamMerge.release.tag")} &quot;<Anchor
                                                 href={x.link}
-                                                caption={parameters.version}
                                                 target="_blank"
                                                 className="is-underlined"
-                                            />&quot; {x.markOnly && <span className="is-italic has-text-grey">(Without MR)</span>}
+                                                caption={parameters.version}
+                                            />&quot; {x.markOnly && <span className="is-italic has-text-grey">({
+                                                getLocalizedText("results.streamMerge.release.withoutMr")
+                                            })</span>}
                                         </span>
                                     </li>
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>
             }
-            <hr />
             <MergeRequestsLists
                 projects={projects}
                 mergedRequests={result.mergedRequests}

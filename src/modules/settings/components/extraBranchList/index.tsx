@@ -7,6 +7,7 @@ import Button from "@bodynarf/react.components/components/button";
 
 import { GlobalAppState } from "@app/store";
 import { updateExtraBranchesAsync } from "@app/store/app";
+import { getLocalizedText } from "@app/locale";
 
 /** Props of `ExtraBranchList` */
 type ExtraBranchListProps = {
@@ -50,8 +51,8 @@ const ExtraBranchList: FC<ExtraBranchListProps> = ({
                     key={item}
 
                     item={item}
-                    onDelete={onDelete}
                     onSave={onAdd}
+                    onDelete={onDelete}
                 />
             )}
             <EmptyExtraBranchListItem
@@ -111,15 +112,15 @@ const ExtraBranchListItem: FC<ExtraBranchListItemProps> = ({
             <div className="is-flex is-align-items-center">
                 <Button
                     type="ghost"
-                    title="Edit"
                     onClick={onEditClick}
+                    title={getLocalizedText("common.edit")}
                     icon={{ name: "pencil", size: ElementSize.Small }}
                 />
                 <Button
                     type="ghost"
-                    title="Delete"
                     className="mx-1"
                     onClick={onDeleteClick}
+                    title={getLocalizedText("common.delete")}
                     icon={{ name: "trash", size: ElementSize.Small }}
                 />
                 <span>
@@ -133,19 +134,19 @@ const ExtraBranchListItem: FC<ExtraBranchListItemProps> = ({
         <div className="mt-1 is-flex is-align-items-center">
             <Button
                 type="ghost"
-                title="Save"
-                icon={{ name: "floppy" }}
                 onClick={onCreateClick}
                 size={ElementSize.Small}
+                icon={{ name: "floppy" }}
                 disabled={name.length === 0}
+                title={getLocalizedText("common.save")}
             />
 
             <Text
                 className="ml-1"
-                placeholder="Name"
                 defaultValue={name}
                 onValueChange={setName}
                 size={ElementSize.Small}
+                placeholder={getLocalizedText("common.save")}
             />
         </div>
     );
@@ -192,20 +193,19 @@ const EmptyExtraBranchListItem: FC<CreateExtraBranchListItemProps> = ({
                 <Button
                     type="primary"
                     outlined
-                    title="Create new"
                     icon={{ name: "plus" }}
-                    onClick={onAddRecordClick}
                     size={ElementSize.Small}
+                    onClick={onAddRecordClick}
+                    title={getLocalizedText("settings.additionalBranches.createNew")}
                 />
                 {clearVisible &&
                     <Button
-                        type="danger"
                         outlined
+                        type="danger"
                         className="ml-1"
-                        title="Delete all"
-                        caption="Remove all"
                         onClick={onClear}
                         size={ElementSize.Small}
+                        caption={getLocalizedText("settings.additionalBranches.deleteAll")}
                     />
                 }
             </div>
@@ -218,27 +218,27 @@ const EmptyExtraBranchListItem: FC<CreateExtraBranchListItemProps> = ({
         <div className="mt-1 is-flex is-align-items-center">
             <Button
                 type="ghost"
-                title="Cancel"
                 className="mr-2"
                 icon={{ name: "x" }}
                 onClick={onCancelClick}
                 size={ElementSize.Small}
+                title={getLocalizedText("common.cancel")}
             />
 
             <Button
                 type="ghost"
-                title="Save"
-                icon={{ name: "floppy" }}
+                disabled={!canSave}
                 onClick={onCreateClick}
                 size={ElementSize.Small}
-                disabled={!canSave}
+                icon={{ name: "floppy" }}
+                title={getLocalizedText("common.save")}
             />
 
             <Text
                 className="ml-1"
-                placeholder="Name"
                 onValueChange={setName}
                 size={ElementSize.Small}
+                placeholder={getLocalizedText("common.name")}
             />
         </div>
     );

@@ -1,0 +1,40 @@
+@use "src/shared/styles.scss" as vars;
+
+.progress-bar {
+    width: 15rem;
+    height: 1rem;
+    border-radius: 2px;
+    background-color: #e0e0e0;
+    overflow: hidden;
+
+    &__fill {
+        height: 100%;
+        border-radius: 2px;
+        background-color: #61dafb;
+
+        background-image: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.3) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.3) 75%,
+            transparent 75%,
+            transparent
+        );
+
+        background-size: 20px 20px;
+        animation: moveStripes 1s linear infinite;
+
+        transition: max-width calc(vars.$transition-duration * 2) vars.$transition-function;
+    }
+}
+
+@keyframes moveStripes {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 20px 0;
+    }
+}

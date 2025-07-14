@@ -1,43 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 
-import { isNullOrEmpty, isNullOrUndefined, Optional } from "@bodynarf/utils";
+import { isNullish, isNullOrEmpty, isNullOrUndefined, Optional } from "@bodynarf/utils";
+import { ElementSize, useUnmount, SelectableItem } from "@bodynarf/react.components";
 import Button from "@bodynarf/react.components/components/button/component";
 import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/component";
-import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
-import { ElementSize, useUnmount } from "@bodynarf/react.components";
+import Dropdown from "@bodynarf/react.components/components/dropdown";
 import Search from "@bodynarf/react.components/components/search/component";
 
-import { Actions, DEFAULT_BRANCHES, DefaultBranch, Group, WritableActions, actionToDescriptionMap } from "@app/models";
-import { branchesSelectList } from "@app/shared/values";
-import { getDefaultParameters } from "@app/core/gitlab/actions";
+import { Actions, DEFAULT_BRANCHES, DefaultBranch, Group, WritableActions } from "@app/models";
+import { getLocalizedText, LocaleKeys } from "@app/locale";
+import { branchesSelectList, projectsViewMode } from "@app/shared/values";
+import { getActionDescription, getDefaultParameters } from "@app/core/gitlab/actions";
 import { GlobalAppState } from "@app/store";
 import { AppSettings } from "@app/store/app";
-import { clearSelection, executeGitlabAction, loadGroups, selectAll, setSearchQuery, toggleItemSelect } from "@app/store/gitlab";
+import { changeProjectsViewMode, clearSelection, executeGitlabAction, loadGroups, selectAll, setSearchQuery, toggleItemSelect } from "@app/store/gitlab";
 
 import "./styles.scss";
 
 import ExpandableGroupList from "../components/expandableGroupList";
 import ParametersConfigurator from "../components/parameters";
 
-const actionSelectList: Array<SelectableItem> =
-    Object
-        .values(Actions)
-        .filter(x => !isNaN(+x))
-        .map(x => x as Actions)
-        .map((value, index) => ({
-            displayValue: `${index + 1}. ${actionToDescriptionMap.get(value)}`,
-            id: value.toString(),
-            value: value.toString(),
-            icon: {
-                name: WritableActions.includes(value) ? "pencil" : "book",
-                className: WritableActions.includes(value) ? "has-text-link" : ""
-            },
-        }))
-    ;
-
 /** Props of @see ManagementList */
-interface ManagementListProps {
+type ManagementListProps = {
     /** Group ids to preload nested projects */
     favoriteGroups: Array<number>;
 
@@ -59,6 +44,9 @@ interface ManagementListProps {
     /** Branches for dropdown */
     branches: Array<SelectableItem>;
 
+    /** Identifier of current view mode for selectable projects component */
+    currentProjectViewMode: string;
+
     /** Select all projects */
     selectAll: () => void;
 
@@ -70,7 +58,7 @@ interface ManagementListProps {
      * @param action Selected action
      * @param parameters Action parameters
      */
-    execute: (action: Actions, parameters: any) => Promise<void>;
+    execute: (action: Actions, parameters: unknown) => Promise<void>;
 
     /** Save current search query */
     setSearchQuery: (search: string) => void;
@@ -88,10 +76,16 @@ interface ManagementListProps {
      * @param ids Specific groups ids to load nested projects
      */
     loadGroups: (ids?: Array<number>) => Promise<void>;
-}
+
+    /**
+     * Change view mode of selectable projects
+     * @param mode New view mode key
+     */
+    changeProjectsViewMode: (mode: string) => void;
+};
 
 /** Main repositories management panel component */
-const ManagementList = ({
+const ManagementList: FC<ManagementListProps> = ({
     settings, branches,
     favoriteGroups, groups, loadGroups,
     selectedProjects, projectsCount,
@@ -99,7 +93,9 @@ const ManagementList = ({
     clearSelection, selectAll,
     searchQuery, setSearchQuery,
     execute,
-}: ManagementListProps): JSX.Element => {
+
+    currentProjectViewMode, changeProjectsViewMode,
+}) => {
     useEffect(() => {
         const loadedGroups = groups
             .filter(({ childrenLoaded }) => childrenLoaded)
@@ -154,6 +150,7 @@ const ManagementList = ({
 
                 setParametersError(undefined);
                 setShouldConfirm(false);
+                setCanExecute(false);
             }
 
             setCurrentAction(action);
@@ -181,55 +178,71 @@ const ManagementList = ({
         [toggleItemSelect]
     );
 
+    const onViewModeChanged = useCallback(
+        (mode?: SelectableItem) => {
+            if (isNullOrUndefined(mode)) {
+                return;
+            }
+
+            changeProjectsViewMode(mode.value);
+        },
+        [changeProjectsViewMode]
+    );
+
     if (groups.length === 0) {
-        return <>LOADING</>;
+        return <>{getLocalizedText("management.loading")}</>;
     }
+
+    const isExecutionDisabled = selectedProjects.length === 0 || !canExecute || (isExtraConfirmRequired && !extraConfirmValue);
+    const executionDisabledReason = getExecutionDisabledTitleResourceKey(selectedProjects.length, canExecute, isExtraConfirmRequired, extraConfirmValue);
 
     return (
         <main role="management-module">
-            <section className="columns is-justify-content-space-around">
+            <section className="columns">
                 <div className="column is-10">
                     <Dropdown
                         deselectable
                         hideOnOuterClick
-                        placeholder="Action"
                         data={{ "dd-identifier": "actions" }}
                         value={currentAction}
-                        items={actionSelectList}
                         onSelect={onActionSelect}
+                        items={getActionSelectList()}
+                        placeholder={getLocalizedText("common.action")}
                         label={{
-                            caption: "Action to perform",
+                            caption: getLocalizedText("management.action"),
                             horizontal: true,
                         }}
                     />
                 </div>
-                <div className="column is-1" role="action-execute">
+                <div className="column is-2" role="action-execute">
                     {!isNullOrUndefined(currentAction) &&
-                        <>
+                        <div className="is-flex is-flex-direction-column is-align-items-stretch">
                             <Button
                                 type="success"
-                                caption="Execute"
-                                disabled={selectedProjects.length === 0 || !canExecute || (isExtraConfirmRequired && !extraConfirmValue)}
                                 onClick={onExecuteClick}
+                                disabled={isExecutionDisabled}
+                                caption={getLocalizedText("management.execute")}
+                                title={isNullish(executionDisabledReason) ? null : getLocalizedText(executionDisabledReason)}
                             />
                             {isExtraConfirmRequired &&
                                 <CheckBox
                                     key={`${isExtraConfirmRequired}`}
+
                                     defaultValue={false}
                                     onValueChange={onExtraConfirmChange}
-                                    label={{ caption: "I am sure", horizontal: true, }}
+                                    label={{ caption: getLocalizedText("management.iAmSure"), horizontal: true, }}
                                 />
                             }
-                        </>
+                        </div>
                     }
                 </div>
             </section>
             <hr className="my-3" />
             {!isNullOrUndefined(currentAction) &&
                 <>
-                    <section className="mb-2">
-                        <h5 className="subtitle is-5">
-                            Parameters
+                    <section>
+                        <h5 className="subtitle is-5 mb-4">
+                            {getLocalizedText("management.parametersCaption")}
                         </h5>
                         <ParametersConfigurator
                             branches={branches}
@@ -241,18 +254,18 @@ const ManagementList = ({
                             setShouldConfirm={setShouldConfirm}
                         />
                         {!isNullOrEmpty(parametersError) &&
-                            <span className="help is-danger">
+                            <span className="help is-danger mt-4">
                                 {parametersError}
                             </span>
                         }
                     </section>
-                    <hr className="my-5" />
+                    <hr className="my-4" />
                 </>
             }
             <section>
                 <h5 className="subtitle is-5">
-                    Select projects to perform selected action {selectedProjects.length > 0
-                        && <>({selectedProjects.length}/{projectsCount} selected)</>
+                    {getLocalizedText("management.selectProjectsCaption")}{selectedProjects.length > 0
+                        && <> ({getLocalizedText("management.selectedProjectsTemplate").format(`${selectedProjects.length}`, `${projectsCount}`)})</>
                     }
                 </h5>
                 <div className="mb-3">
@@ -260,7 +273,7 @@ const ManagementList = ({
                         onSearch={onSearch}
                         searchType="byTyping"
                         defaultValue={searchQuery}
-                        caption="Search projects.."
+                        caption={getLocalizedText("management.searchProjects")}
                     />
                 </div>
                 <ExpandableGroupList
@@ -275,32 +288,41 @@ const ManagementList = ({
                             <Button
                                 outlined
                                 type="primary"
-                                caption="Select all"
                                 size={ElementSize.Small}
                                 onClick={onSelectAllClick}
                                 disabled={selectedProjects.length === projectsCount}
-                                title="All available projects will be selected. Even those that are not visible due to the current filter."
+                                title={getLocalizedText("management.selectAllTitle")}
+                                caption={getLocalizedText("management.selectAllCaption")}
                             />
                             <Button
                                 outlined
                                 type="primary"
                                 className="mx-2"
-                                caption="Deselect all"
                                 size={ElementSize.Small}
                                 onClick={onClearSelectionClick}
                                 disabled={selectedProjects.length === 0}
+                                caption={getLocalizedText("management.deselectAll")}
+                            />
+                            <Dropdown
+                                compact
+                                placeholder=""
+                                hideOnOuterClick
+                                onSelect={onViewModeChanged}
+                                items={getProjectsViewModeList()}
+                                value={getProjectsViewModeMap().get(currentProjectViewMode)}
+                                className="projects-view-mode"
                             />
                         </div>
                         <CheckBox
                             defaultValue={saveSelection}
                             onValueChange={setSaveSelection}
-                            label={{ caption: "Save current selection", horizontal: true }}
+                            label={{ caption: getLocalizedText("management.saveCurrentSelection"), horizontal: true }}
                         />
                     </div>
                 }
                 {favoriteGroups.length === 0 &&
                     <p className="is-italic has-text-grey my-2">
-                        If you don&apos;t see any nested projects or can&apos;t select them, make sure you mark groups as favorites in the settings
+                        {getLocalizedText("management.noProjectsVisibleNote")}
                     </p>
                 }
             </section>
@@ -317,6 +339,7 @@ export default connect(
         searchQuery: gitlab.searchValue,
         settings: app.settings,
         branches: getDropdownBranches(app.extraBranches),
+        currentProjectViewMode: gitlab.currentProjectViewMode,
     }),
     {
         loadGroups,
@@ -325,6 +348,7 @@ export default connect(
         selectAll,
         setSearchQuery,
         execute: executeGitlabAction,
+        changeProjectsViewMode
     }
 )(ManagementList);
 
@@ -346,3 +370,75 @@ const getDropdownBranches = (extraBranches: Array<string>): Array<SelectableItem
             branchesSelectList
         );
 };
+
+/**
+ * Get reason why execute action is disabled as locale key. If action can be executed - `null`
+ * @param selectedProjectsLength Amount of selected projects
+ * @param canExecute Is required parameters filled
+ * @param isExtraConfirmRequired Is extra confirmation required
+ * @param extraConfirmValue Extra confirmation value
+ * @returns Locale key of reason why execution is disabled; otherwise - `null`
+ */
+const getExecutionDisabledTitleResourceKey = (
+    selectedProjectsLength: number,
+    canExecute: boolean,
+    isExtraConfirmRequired: boolean,
+    extraConfirmValue: boolean,
+): keyof LocaleKeys | null => {
+    if (selectedProjectsLength > 0 && canExecute && (!isExtraConfirmRequired || extraConfirmValue)) {
+        return null;
+    }
+
+    if (selectedProjectsLength === 0) {
+        return "management.noSelectedProject";
+    }
+
+    if (!canExecute) {
+        return "management.requiredParametersNotSet";
+    }
+
+    return "management.extraConfirmRequired";
+};
+
+let actionSelectList: Array<SelectableItem>;
+
+/**
+ * Get dropdown list for actions
+ * @returns List for selection
+ */
+const getActionSelectList = (): Array<SelectableItem> => {
+    if (isNullish(actionSelectList)) {
+        actionSelectList =
+            Object
+                .values(Actions)
+                .filter(x => !isNaN(+x))
+                .map(x => x as Actions)
+                .map((value, index) => ({
+                    displayValue: `${index + 1}. ${getActionDescription(value)}`,
+                    id: value.toString(),
+                    value: value.toString(),
+                    icon: {
+                        name: WritableActions.includes(value) ? "pencil" : "book",
+                        className: WritableActions.includes(value) ? "has-text-link" : ""
+                    },
+                }))
+            ;
+    }
+
+    return actionSelectList;
+};
+
+/** Get projects view mode list for dropdown */
+const getProjectsViewModeList = (): Array<SelectableItem> => {
+    return projectsViewMode.map(({ id, displayValue, value, title }) => ({
+        id,
+        value,
+        displayValue: displayValue(),
+        title: title(),
+    }));
+};
+
+/** Map project view mode list to dictionary for easy access for list values */
+const getProjectsViewModeMap = () => new Map(
+    getProjectsViewModeList().map(x => [x.value, x])
+);

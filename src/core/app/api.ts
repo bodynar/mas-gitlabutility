@@ -1,5 +1,5 @@
 import { isNullOrEmpty } from "@bodynarf/utils";
-import { postAsync, getAsync, fetchAsync } from "@bodynarf/utils/api/simple";
+import { postAsync, getAsync, fetchAsync, simpleFetchAsync } from "@bodynarf/utils/api/simple";
 
 /** Auth token */
 let authToken: string;
@@ -87,8 +87,8 @@ export const put = <TResult>(uri: string, requestData: Record<string, unknown>):
  * @param uri Api endpoint address
  * @returns Promise with nothing
  */
-export const deleteRequest = (uri: string): Promise<void> => {
-    return fetchAsync(
+export const deleteRequest = async (uri: string): Promise<void> => {
+    await simpleFetchAsync(
         getFullApiEndpoint(uri),
         {
             method: "DELETE",
@@ -128,7 +128,6 @@ const getFullApiEndpoint = (apiEndpoint: string): string => {
         + (apiEndpoint.startsWith("/") ? apiEndpoint : `/${apiEndpoint}`)
         ;
 };
-
 
 /**
  * Get auth header with token

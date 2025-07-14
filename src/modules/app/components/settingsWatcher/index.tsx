@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 
 import { isNullOrUndefined } from "@bodynarf/utils";
 
-import { OperationResult, StorageHistoryDto, Notification } from "@app/models";
+import { OperationResult, StorageHistoryDto, Notification, ActionResult } from "@app/models";
 import { setSession } from "@app/shared/values";
 import { checkHasStorage, getSettingsDiff, getHistoryFromStorage, getSettingsFromStorage, initSession, saveSettingsToStorage, setCurrentToken, saveHistoryToStorage, getSessionStateDiff, loadExtraBranches, setApiBase } from "@app/core";
 import { GlobalAppState } from "@app/store";
@@ -27,7 +27,7 @@ type SettingsWatcherProps = {
     notifications: Array<Notification>;
 
     /** Results of the operations performed */
-    operationsResults: Array<OperationResult<any>>;
+    operationsResults: Array<OperationResult<ActionResult>>;
 
     /**
      * Save current settings values

@@ -44,7 +44,7 @@ export const chunk = <TItem>(
 };
 
 /**
- * Flash application 
+ * Flash application
  */
 export const flash = (): void => {
     window.electron.app.flash();
@@ -56,4 +56,25 @@ export const flash = (): void => {
  */
 export const preventClose = (canClose: boolean): void => {
     window.electron.app.preventClose(canClose);
+};
+
+/**
+ * Update loading state at taskbar if app is minimized
+ * @param state Current state
+ * @param maxState Maximum value
+ */
+export const setTaskbarProgressState = (
+    state: number,
+    maxState: number,
+    important = false,
+): void => {
+    const maxValue = maxState === 0 ? 1 : maxState;
+    const value = state < 0 ? 0 : state;
+
+    const percentage = Math.min(
+        100,
+        value / maxValue
+    );
+
+    window.electron.app.updateLoadingState(percentage, important);
 };

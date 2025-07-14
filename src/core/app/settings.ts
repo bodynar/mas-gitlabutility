@@ -27,11 +27,28 @@ export const getSettingsFromStorage = (useDefaultValue = false): Array<SettingsU
 
         result.push({
             key: settingKey,
-            value: storageValue ?? (settingKey === "preloadGroupIds" ? [] : ""),
+            value: storageValue ?? getSettingDefaultValue(settingKey),
         });
     });
 
     return result;
+};
+
+/**
+ * Get default value for each application setting
+ * @param settingKey Key of `AppSettings`
+ * @returns Default value
+ */
+const getSettingDefaultValue = (settingKey: keyof AppSettings): string | Array<number> | boolean => {
+    if (settingKey === "preloadGroupIds") {
+        return [];
+    }
+
+    if (settingKey === "isDarkTheme" || settingKey === "showLoadingStateAtTaskbar") {
+        return false;
+    }
+
+    return "";
 };
 
 /**

@@ -1,3 +1,4 @@
+import { LocaleKeys } from "@app/locale";
 import { Notification, NotificationReference } from "@app/models";
 
 /** Application notificator state */
@@ -15,8 +16,11 @@ export interface NotificatorState {
  */
 type ShowNotificationFn<TMessage> = (message: TMessage, important?: boolean, removeLoadingState?: boolean, link?: NotificationReference) => void;
 
-/** Success notification show function type */
+/** Show notification with strict message */
 export type ShowSimpleMessageFn = ShowNotificationFn<string>;
+
+/** Show notification with message from localization store */
+export type ShowLocalizedMessageFn = ShowNotificationFn<keyof LocaleKeys>;
 
 /** Error notification show function type */
 export type ShowErrorFn = ShowNotificationFn<Error | string>;

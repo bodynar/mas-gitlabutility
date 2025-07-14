@@ -2,6 +2,7 @@ import { isNullish, isNullOrEmpty } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { ActionResultState, CancellationToken, CreateBranchAction, CreateBranchActionError, CreateBranchActionErrorType, CreateBranchActionResult, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { checkHasBranch, createBranch, getBranchInfo } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -20,6 +21,7 @@ export const performCreateBranchAction: actionHandler = async (
 ): Promise<CreateBranchActionResult> => {
     const success: Array<number> = [];
     const errors: Array<CreateBranchActionError> = [];
+    let isBranchAdded = false;
 
     for (let index = 0; index < action.projects.length; index++) {
         const projectId = action.projects[index];
@@ -35,14 +37,14 @@ export const performCreateBranchAction: actionHandler = async (
 
             messageUpdateEventEmitter.trigger({
                 state: index,
-                message: `Processing ${index + 1}\\${action.projects.length}`
+                message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${index + 1}`, `${action.projects.length}`)
             });
 
             const hasBranch = await checkHasBranch(projectId, action.parameters.source);
 
             if (!hasBranch) {
                 errors.push({
-                    message: `Branch ${action.parameters.source} not found`,
+                    message: getLocalizedText("core.gitlab.branchNotFoundTemplate").format(action.parameters.source),
                     projectId: projectId,
                     type: CreateBranchActionErrorType.sourceBranchNotFound,
                 });
@@ -56,7 +58,7 @@ export const performCreateBranchAction: actionHandler = async (
 
             if (isNullish(branch)) {
                 errors.push({
-                    message: `Branch ${action.parameters.branchName} not created`,
+                    message: getLocalizedText("core.gitlab.branch.create.branchNotCreatedTemplate").format(action.parameters.branchName),
                     projectId: projectId,
                     type: CreateBranchActionErrorType.sourceBranchNotFound,
                 });
@@ -65,6 +67,17 @@ export const performCreateBranchAction: actionHandler = async (
             }
 
             success.push(projectId);
+
+            if (!isBranchAdded
+                && action.parameters.saveAsAdditionalBranch
+            ) {
+                isBranchAdded = true; // if error occurs - do not try again
+
+                action.parameters.extraBranches = [
+                    ...action.parameters.extraBranches,
+                    action.parameters.branchName
+                ];
+            }
         } catch (error) {
             if (error instanceof HttpError) {
                 if (error.response.status === 400) {
@@ -98,11 +111,6 @@ export const performCreateBranchAction: actionHandler = async (
         }
     }
 
-    messageUpdateEventEmitter.trigger({
-        state: action.projects.length,
-        message: `Processing ${action.projects.length}\\${action.projects.length}`
-    });
-
     if (cancellationToken.isCancelled) {
         return {
             status: ActionResultState.cancelled,
@@ -110,6 +118,11 @@ export const performCreateBranchAction: actionHandler = async (
             errors: errors.sort((x, y) => x.type - y.type)
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`)
+    });
 
     let status = ActionResultState.success;
 

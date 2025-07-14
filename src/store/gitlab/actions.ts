@@ -1,6 +1,6 @@
 import { createAction } from "@reduxjs/toolkit";
 
-import { Group, OperationResult } from "@app/models";
+import { ActionResult, Group, OperationResult, ProjectViewMode } from "@app/models";
 
 /**
  * Set gitlab groups
@@ -39,7 +39,7 @@ export const clearSelection = createAction("mas.gua/git/clearSelection");
 export const selectAll = createAction("mas.gua/git/selectAll");
 
 /** Add operation result to history */
-export const addOperationResult = createAction<OperationResult<any>>("mas.gua/git/addOperationResult");
+export const addOperationResult = createAction<OperationResult<ActionResult>>("mas.gua/git/addOperationResult");
 
 /**
  * Set search text query
@@ -57,3 +57,9 @@ export const markThatVersionWarningWasShown = createAction("mas.gua/git/markWarn
  * @param _ Is api inaccessible
  */
 export const saveApiInInaccessible = createAction<boolean | undefined>("mas.gua/git/saveApiInInaccessible");
+
+/**
+ * Change view mode of selectable projects
+ * @param _ New view mode key
+ */
+export const changeProjectsViewMode = createAction<ProjectViewMode>("mas.gua/git/changeProjectsViewMode");

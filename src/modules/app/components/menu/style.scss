@@ -9,6 +9,15 @@
             .bbr-icon {
                 margin-right: 0.25rem;
             }
+
+            &.is-active {
+                background-color: rgb(235, 237, 255);
+                color: #000;
+            }
+
+            &.is-active .bbr-icon.bi-gitlab {
+                color: #61dafb;
+            }
         }
 
         [role="app-menu-link-disabled"] {

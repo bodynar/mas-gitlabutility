@@ -1,0 +1,424 @@
+{
+    "common": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "name": "Name",
+        "cancel": "Cancel",
+        "loading": "Loading",
+        "session": "Session",
+        "createdOn": "Created on",
+        "back": "Back",
+        "error": "Error",
+        "errors": "Errors",
+        "notifications": "Notifications",
+        "action": "Action"
+    },
+    "core": {
+        "gitlab": {
+            "processingStateTemplate": "Processing {0}\\{1}",
+            "branchNotFoundTemplate": "Branch \"{0}\" not found",
+            "timeRange": {
+                "second": "sec.",
+                "minute": "min.",
+                "hour": "h."
+            },
+            "branch": {
+                "checkDiff": {
+                    "projectDoesNotHaveBranch": "Project doesn't have one of branches"
+                },
+                "create": {
+                    "branchNotCreatedTemplate": "Branch \"{0}\" not created"
+                },
+                "delete": {}
+            },
+            "mergeRequest": {
+                "requestNotFound": "Merge request not found",
+                "close": {},
+                "merge": {}
+            },
+            "streamMerge": {
+                "merge": {
+                    "processingStateTemplate": "Merging {0}\\{1}",
+                    "mergeConflicts": "Merge conflicts",
+                    "noRights": "You're don't have enough access rights to merge",
+                    "cannotMerge": "Cannot merge. Check merge request",
+                    "noDiffs": "No diffs between branches were found",
+                    "noBranch": "Project doesn't have one of merging branches"
+                },
+                "release": {
+                    "gatheringBranchInfoTemplate": "Gathering branch info {0}\\{1}",
+                    "creatingTagsTemplate": "Creating tags {0}\\{1}"
+                }
+            },
+            "tag": {
+                "tagNotFound": "Tag not found",
+                "errorDuringExecutionTemplate": "Error during execution, {0}",
+                "checkNonActual": {},
+                "move": {
+                    "tagIsUpToDate": "Tag is up to date"
+                }
+            }
+        }
+    },
+    "app": {
+        "brand": {
+            "glitchyTitle": "Seems app is glitchy.."
+        },
+        "themeSwitcher": {
+            "lightTheme": "Light theme",
+            "darkTheme": "Dark theme"
+        },
+        "error": {
+            "message": "Error detected.\nPlease, contact the app owner with saved logs",
+            "openLogsActionTitle": "Open logs"
+        },
+        "menu": {
+            "disabledItemTitle": "Item is disabled due to empty connection settings",
+            "mainMenuItemCaption": "Main",
+            "mainMenuItemTitle": "The main module where all operations are performed",
+            "settingsMenuItemCaption": "Settings",
+            "settingsMenuItemTitle": "Application settings page (connections, operations, etc.)",
+            "resultsMenuItemCaption": "Results",
+            "resultsMenuItemTitle": "List of results of started operations",
+            "sessionHistoryMenuItemCaption": "Session history",
+            "sessionHistoryMenuItemTitle": "Information about the history of sessions (application launches)",
+            "notificationsTitle": "List of app notifications"
+        },
+        "notification": {
+            "dismissAll": "Dismiss all",
+            "dismissAllTitle": "Dismiss all notifications",
+            "hideNotificationTitle": "Hide notification"
+        }
+    },
+    "history": {
+        "currentSession": "Current session",
+        "startedAt": "Started at",
+        "operationResultsCount": "Operation results",
+        "sessionHistoryIsEmpty": "Session history is empty\nᓚᘏᗢ",
+        "clearSessionHistory": "Clear history",
+        "clearEmptyRecords": "Remove empty",
+        "clearEmptyRecordsTitle": "Remove session records with no results and notifications"
+    },
+    "management": {
+        "loading": "LOADING",
+        "action": "Action to perform",
+        "requiredParametersNotSet": "Not all required parameters are filled in correctly",
+        "extraConfirmRequired": "Additional confirmation required",
+        "noSelectedProject": "No projects selected",
+        "execute": "Execute",
+        "iAmSure": "I am sure",
+        "parametersCaption": "Parameters",
+        "selectProjectsCaption": "Select projects to perform selected action",
+        "selectedProjectsTemplate": "{0}/{1} selected",
+        "searchProjects": "Search projects..",
+        "actionIsNotSelected": "Action not selected",
+        "groupIsEmpty": "Group is not marked as favorite or does not contain nested projects",
+        "selectAllCaption": "Select all",
+        "selectAllTitle": "All available projects will be selected. Even those that are not visible due to the current filter",
+        "deselectAll": "Deselect all",
+        "saveCurrentSelection": "Save current selection",
+        "noProjectsVisibleNote": "If you don't see any nested projects or can't select them, make sure you mark groups as favorites in the settings",
+        "expandableGroupListItemSelectedTemplate": "(Selected {0}/{1})",
+        "componentNotFound": "ACTION CONFIGURATION NOT FOUND",
+        "parameters": {
+            "sourceBranchSameAsTarget": "From branch cannot be same as target branch",
+            "switchBranches": "Switch branches",
+            "branchNameCannotBeEmpty": "Branch name cannot be empty",
+            "parameterIsNotSet": "Parameter must be set manually",
+            "branch": {
+                "checkDiffs": {},
+                "create": {
+                    "sourceBranchNameSameAsTarget": "Branch name must not duplicate source branch",
+                    "branchIsAlreadyPresentedInExtraBranchListTemplate": "Branch \"{0}\" is already part of additional branches set"
+                },
+                "delete": {
+                    "defaultBranchCannotBeDeleted": "Default branches cannot be deleted",
+                    "branchIsNotPresentedInExtraBranchListTemplate": "Branch \"{0}\" is not a part of additional branches set"
+                }
+            },
+            "mergeRequest": {
+                "requestNameCannotBeEmpty": "Merge request name cannot be empty",
+                "close": {},
+                "merge": {}
+            },
+            "streamMerge": {
+                "templateWouldNotBeApplied": "Once you make changes here, the template will no longer apply",
+                "useTemplate": "Use template from setting",
+                "merge": {
+                    "nameMustBeSet": "Name must be set",
+                    "releaseNoteTemplate": "If you want to perform an release, please, use action called \"{0}\""
+                },
+                "release": {
+                    "versionCannotBeEmpty": "Version cannot be empty",
+                    "versionNumberIsNotSet": "Number of version is not set",
+                    "requestNameIsNotSet": "Merge request name must be set",
+                    "branchWithTestedCode": "Branch with code what should be tested",
+                    "branchWithProductiveCode": "Branch with productive-ready code"
+                }
+            },
+            "tag": {
+                "nameIsEmpty": "Tag name is not set",
+                "checkNonActual": {},
+                "move": {}
+            }
+        }
+    },
+    "notifications": {
+        "noItemsToDisplayError": "No notifications to display\nTry selecting other session or complete any action to see notification in current session\n(●'◡'●)",
+        "message": "Message"
+    },
+    "results": {
+        "noItemsToDisplayError": "No results to display\nTry selecting other session or complete any action to see result in current session\n(●'◡'●)",
+        "operation": "Operation",
+        "startedOn": "Started on",
+        "completedOn": "Completed on",
+        "youHaveAbortedExecution": "You have aborted the execution",
+        "resultTitleError": "Error aborted the execution",
+        "resultTitleSuccess": "Execution completed without any errors",
+        "resultTitleWarn": "Execution completed, but with some errors",
+        "resultIdIsEmpty": "Operation result identifier is not provided",
+        "resultNotFoundTemplate": "Operation result with identifier \"{0}\" not found",
+        "resultCaptionTemplate": "Operation #{0} result",
+        "operationDidNotStarted": "The operation did not start due to an error",
+        "projectNotFoundTemplate": "(PROJECT \"{0}\" NOT FOUND)",
+        "componentNotFound": "ACTION RESULT PARAMETERS NOT FOUND",
+        "copyToClipboard": "Copy to clipboard for JIRA",
+        "errors": "errors",
+        "results": "results",
+        "openDetails": "Open details",
+        "noErrorsCaption": "No errors! Hooray! 🎉",
+        "branch": {
+            "checkDiffs": {
+                "caption": "Check-diff",
+                "hasDiffs": "Has diffs",
+                "noDiffs": "No diffs",
+                "successCaption": "Diffs result",
+                "noSuccessCaption": "No successfully completed \"check-diff\" operations! So sad! 😥"
+            },
+            "create": {
+                "captionTemplate": "Create new branch \"{0}\" from \"{1}\"",
+                "successCaption": "Created branches",
+                "noSuccessCaption": "No branches were created! 😥",
+                "branchCreatedMessage": "Branch created"
+            },
+            "delete": {
+                "successCaption": "Deleted branches",
+                "noSuccessCaption": "No branches were deleted! 😥",
+                "branchDeletedMessage": "Branch deleted",
+                "ambiguityCaption": "Ambiguity branches",
+                "noAmbiguityCaption": "No ambiguity! Hooray! 🎉",
+                "ambiguityItemTemplate": "Branches with \"{0}\" in name: {1}"
+            }
+        },
+        "mergeRequest": {
+            "ambiguityCaption": "Ambiguity requests",
+            "noAmbiguityMessage": "No ambiguity requests!",
+            "ambiguityItemTemplate": "There's {0} requests with that name in project",
+            "mergedRequests": "Merged requests",
+            "noMergedRequests": "There's no merged MR's! So sad! 😥",
+            "close": {
+                "successCaption": "Closed requests",
+                "noSuccessMessage": "No requests were closed! 😥",
+                "requestClosed": "Merge request closed"
+            },
+            "merge": {
+                "requestMerged": "Merge request merged"
+            },
+            "list": {
+                "copySuccessCaptionItemTemplate": "- {0}: Merge request \"{1}\" merged in [{2}|{3}]",
+                "copyNotSuccessCaptionItemTemplate": "{0}: Merge request [{1}|{2}] not merged: \"{3}\"",
+                "copyNotCreatedMergeRequestItemTemplate": "{0}: Merge request not created: \"{1}\"",
+                "notSuccessCaption": "Not merged MR's",
+                "notSuccessEmpty": "There's no not merged MR's! Hooray! 🎉",
+                "notSuccessError": "These requests cannot be merged due to some errors. Please, merge it manually",
+                "mergeRequest": "Merge request",
+                "notMerged": "not merged",
+                "mergeRequestNotCreated": "Merge request not created",
+                "mergeRequestMergedTemplate": "Merge request {0} merged in"
+            }
+        },
+        "copyToClipboardButton": {
+            "copiedToClipboard": "Copied to clipboard",
+            "buttonIsOnCoolDown": "Button is on cooldown",
+            "copyToClipboard": "Copy to clipboard"
+        },
+        "streamMerge": {
+            "merge": {},
+            "release": {
+                "createdTags": "Created tags",
+                "createdTagItemTemplate": "- {0}: Tag \"[{1}|{2}]\"{3}",
+                "noCreatedTags": "Tag's were'nt created! So sad! 😥",
+                "tag": "Tag",
+                "withoutMr": "Without MR"
+            }
+        },
+        "tag": {
+            "checkNonActual": {
+                "copyNonActualTagItemTemplate": "- {0}: [Tag|{1}] is not on [latest commit|{2}]",
+                "copyActualTagItemTemplate": "- {0}: Tag is on latest commit",
+                "copyErrorsCaption": "Errors during checking actuality of tag",
+                "copyErrorItemTemplate": "- {0}: {1}",
+                "nonActualTagsCaption": "Not actual tags",
+                "nonActualTagsEmpty": "Non actual were'nt tags found",
+                "actualTagsCaption": "Actual tags",
+                "actualTagsEmpty": "No tags that are actual found 😥",
+                "tagIsOnLatestCommit": "Tag is on latest commit",
+                "isNotOn": "is not on"
+            },
+            "move": {
+                "copyNotMovedTagsItemTemplate": "- {0}: Tag was not moved: \"{1}\"",
+                "copyMovedTagsItemTemplate": "- {0}: Tag was moved to latest commit on {1} branch \"[{2}|{3}]\"",
+                "notMovedTags": "Not moved tags",
+                "notMovedTagsEmpty": "All tag's were moved! Hooray! 🎉",
+                "notMovedTagsNote": "Next tags have not been moved. Please check each tag manually",
+                "movedTags": "Moved tags",
+                "movedTagsEmpty": "No tag's were moved! So sad! 😥",
+                "tagWasNotMoved": "Tag was not moved",
+                "tagWasMovedToLatestCommitTemplate": "Tag was moved to latest commit on {0} branch"
+            }
+        }
+    },
+    "settings": {
+        "viewMode": {
+            "toEdit": "Switch to edit mode",
+            "toView": "Switch to view mode"
+        },
+        "noChanges": "No changes were made",
+        "applicationSettings": {
+            "caption": "Application settings",
+            "apiUrlPlaceholder": "Site URL with installed gitlab",
+            "apiUrlLabel": "Gitlab URL",
+            "gitlabTokenLabel": "Gitlab auth token",
+            "gitlabTokenPlaceholder": "Personal auth token",
+            "taskbarLoadingStateLabel": "Taskbar loading state",
+            "taskbarLoadingStateTitle": "Display loading state at taskbar"
+        },
+        "templates": {
+            "caption": "Actions configuration (templates)",
+            "tagLabel": "Tag prefix",
+            "tagPlaceholder": "Template name for release tag",
+            "tagHintTemplate": "Example: {0}{1}.1.0",
+            "simpleExample": "Example: {0}",
+            "streamMergeRequestLabel": "Stream merge",
+            "streamMergeRequestPlaceholder": "Template name for stream merge",
+            "releaseMergeRequestLabel": "Release merge",
+            "releaseMergeRequestPlaceholder": "Template name for release merge",
+            "resetToDefaultButton": "Reset to default"
+        },
+        "favoriteGroups": {
+            "caption": "Favorite groups",
+            "noTokenSetError": "Please, configure gitlab connection settings first",
+            "blockHint": "Choose groups to preload.\nSelected groups will be loaded (with nested projects) on application start",
+            "searchCaption": "Search by name",
+            "noItemsFoundBySearch": "No groups found with that name\n\n\\_(ツ)_/¯"
+        },
+        "additionalBranches": {
+            "caption": "Additional branches",
+            "blockHint": "You can configure extra branches to use in actions\nOnly unique branch names will be saved",
+            "noteCaption": "NOTE",
+            "blockNote": "Branch name is case sensitive",
+            "createNew": "Create new",
+            "deleteAll": "Remove all"
+        }
+    },
+    "store": {
+        "app": {
+            "mergeRequestNameTemplate": "[Auto] Merge \"{0}\" into \"{1}\"",
+            "releaseMergeRequestNameTemplate": "[Auto] Merge for Release \"{0}\"",
+            "appHistoryDeleting": "Deleting session history",
+            "appHistoryDeleted": "Session history successfully deleted",
+            "emptyHistoryRecordsDeleted": "Empty session records have been deleted"
+        },
+        "gitlab": {
+            "noProjectsSelected": "No project selected",
+            "actionIsNotImplemented": "Action \"{0}\" is not implemented yet",
+            "performingOperation": "Performing an operation \"{0}\"",
+            "cancelOperation": "Cancel operation",
+            "operationFailed": "Operation failed. Check result for more information",
+            "operationCancelled": "Operation cancelled. See operation details in",
+            "operationCompleted": "Operation completed. See operation details in",
+            "gitlabIsInaccessible": "Gitlab is inaccessible",
+            "errorDuringDataLoad": "Error during groups data load",
+            "gitlabVersionNoteTemplate": "Gitlab site runs on v{0}.\nBut {1} app supports v{2} and earlier.\nSome functions may be unstable.\nPlease, contact the app owner for updates",
+            "tokenIsIncorrect": "Gitlab auth token is incorrect",
+            "tokenIsNotSet": "Gitlab access token not set",
+            "tokenContainsInvalidCharacters": "Gitlab access token contains invalid characters",
+            "gitlabAccessCheckUnknownError": "An unexpected error occurred while checking Gitlab availability",
+            "versionWarning": {
+                "sendEmail": "Send email",
+                "subjectTemplate": "[{0}] App update request",
+                "bodyTemplate": "App version v{0} [supported Gitlab version {1}],\nGitlab site version {2}"
+            }
+        }
+    },
+    "shared": {
+        "projectsViewMode": {
+            "all": "All",
+            "allTitle": "Show all projects",
+            "selected": "Only selected",
+            "selectedTitle": "Show only selected projects",
+            "unselected": "Not selected",
+            "unselectedTitle": "Show only unselected projects"
+        },
+        "sessionSelector": {
+            "current": "Current"
+        },
+        "actionDescriptions": {
+            "merge": "Merge branches",
+            "release": "Make a release",
+            "moveTag": "Move tag to latest commit",
+            "createBranch": "Create new branch",
+            "deleteBranch": "Delete branch",
+            "closeMergeRequest": "Close opened merge request",
+            "mergeRequest": "Merge opened request",
+            "checkDiffs": "Check diff between branches",
+            "checkNonActualTags": "Find tags that not on latest commit"
+        },
+        "logFileIsNotFound": "Log file for the selected notification not found",
+        "paginator": {
+            "previousPageCaption": "Previous",
+            "previousPageTitle": "Open previous data page",
+            "nextPageCaption": "Next",
+            "nextPageTitle": "Open next page of data",
+            "openConcretePageTitleTemplate": "Open {0} page"
+        }
+    },
+    "parameters": {
+        "requestName": "MR name",
+        "from": "Source branch",
+        "to": "Target branch",
+        "branch": {
+            "branchName": "Branch name",
+            "checkDiffs": {},
+            "create": {
+                "saveBranchAsAdditionalBranch": "Add branch to additional branches list"
+            },
+            "delete": {
+                "deleteBranchFromAdditionalBranches": "Remove branch from additional branches list"
+            }
+        },
+        "mergeRequest": {
+            "deleteBranchAfter": "Delete source branch after",
+            "close": {},
+            "merge": {}
+        },
+        "streamMerge": {
+            "merge": {},
+            "release": {
+                "testBranch": "Test branch",
+                "productiveBranch": "Production branch",
+                "version": "Version",
+                "setVersionTagOnMergeCommit": "Set version tag on merge commit"
+            }
+        },
+        "tag": {
+            "branch": "Branch",
+            "tagName": "Tag name",
+            "checkNonActual": {},
+            "move": {
+                "createTagIfNotExist": "Create tag if not exist"
+            }
+        }
+    }
+}

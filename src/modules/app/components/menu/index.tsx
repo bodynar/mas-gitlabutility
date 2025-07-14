@@ -1,25 +1,27 @@
-import { useMemo } from "react";
+import { FC, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import { isNullish } from "@bodynarf/utils";
 import Icon from "@bodynarf/react.components/components/icon/component";
 
 import "./style.scss";
 
 import { NavigationMenuItem } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 /** Menu component props */
-interface AppMenuProps {
+type AppMenuProps = {
     /** Menu items */
     menu: Array<NavigationMenuItem>;
 
     /** Is gitlab settings set (token & api address) */
     isApiConfigured: boolean;
-}
+};
 
 /** App main menu component */
-const AppMenu = ({
+const AppMenu: FC<AppMenuProps> = ({
     menu, isApiConfigured,
-}: AppMenuProps): JSX.Element => {
+}) => {
     const { pathname } = useLocation();
     const activeMenuItem = useMemo(() => menu.find(({ link }) => pathname.startsWith(link)), [menu, pathname]);
 
@@ -42,7 +44,7 @@ const AppMenu = ({
 export default AppMenu;
 
 /** Single menu item props */
-interface MenuItemProps {
+type MenuItemProps = {
     /** Displaying item */
     item: NavigationMenuItem;
 
@@ -51,11 +53,11 @@ interface MenuItemProps {
 
     /** Is gitlab settings set (token & api address) */
     isApiConfigured: boolean;
-}
+};
 
-const MenuItem = ({
+const MenuItem: FC<MenuItemProps> = ({
     item, active, isApiConfigured,
-}: MenuItemProps): JSX.Element => {
+}) => {
     if ((item.requireSettings ?? false) && !isApiConfigured) {
         return (
             <li
@@ -65,10 +67,10 @@ const MenuItem = ({
                 <a
                     className="has-text-grey"
                     role="app-menu-link-disabled"
-                    title="Item is disabled due to empty connection settings"
+                    title={getLocalizedText("app.menu.disabledItemTitle")}
                 >
                     <Icon name={item.icon} />
-                    {item.caption}
+                    {getLocalizedText(item.caption)}
                 </a>
             </li>
         );
@@ -82,10 +84,10 @@ const MenuItem = ({
                 to={item.link}
                 role="app-menu-link"
                 className={active ? "is-active" : undefined}
-
+                title={isNullish(item.title) ? null : getLocalizedText(item.title)}
             >
-                <Icon name={item.icon} />
-                {item.caption}
+                <Icon name={active ? (item.activeIcon ?? item.icon) : item.icon} />
+                {getLocalizedText(item.caption)}
             </Link>
         </li>
     );

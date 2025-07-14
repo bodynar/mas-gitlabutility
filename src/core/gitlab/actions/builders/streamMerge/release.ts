@@ -10,7 +10,7 @@ import { ActionBuilder } from "..";
  */
 export const buildReleaseActionConfig: ActionBuilder<ReleaseAction, ReleaseParameters> = (
     projectIds: Array<number>,
-    { setVersionTagAfter, version, mergeRequestName }: ReleaseParameters
+    { setVersionTagAfter, version, mergeRequestName, productionBranch, testBranch }: ReleaseParameters
 ): ReleaseAction => {
     return new ReleaseAction(
         projectIds,
@@ -18,6 +18,8 @@ export const buildReleaseActionConfig: ActionBuilder<ReleaseAction, ReleaseParam
             mergeRequestName,
             setVersionTagAfter,
             version,
+            productionBranch,
+            testBranch,
         }
     );
 };

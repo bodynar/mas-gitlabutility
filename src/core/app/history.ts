@@ -1,10 +1,11 @@
 import { generateGuid, isNullish } from "@bodynarf/utils";
 
-import { Session, StorageHistoryDto, OperationResult, Notification } from "@app/models";
+import { Session, StorageHistoryDto, OperationResult, Notification, ActionResult } from "@app/models";
 
 import storage from "@app/core/storage";
 import { AppHistory } from "@app/store/app";
 import { appSession } from "@app/shared/values";
+import { getDurationCaption } from "../gitlab/actions";
 
 /** Key to store history in persistent storage */
 const historyStorageKey = "appHistory";
@@ -25,7 +26,17 @@ export const getHistoryFromStorage = (): StorageHistoryDto => {
     }
 
     const storageValue = storage.get<string>(historyStorageKey);
-    return JSON.parse(storageValue) as StorageHistoryDto;
+    const history = JSON.parse(storageValue) as StorageHistoryDto;
+
+    return {
+        ...history,
+        results: history.results.map(x => ({
+            ...x,
+            duration: isNullish(x.duration)
+                ? getDurationCaption(x.startedOn, x.completedOn)
+                : x.duration
+        }))
+    };
 };
 
 /**
@@ -76,7 +87,7 @@ export const initSession = (): Session => {
 export const getSessionStateDiff = (
     appHistory: AppHistory,
     notifications: Array<Notification>,
-    operationsResults: Array<OperationResult<any>>
+    operationsResults: Array<OperationResult<ActionResult>>
 ): StorageHistoryDto => {
     const notificationKeys = appHistory.notifications.map(({ id }) => id);
     const operationsResultKeys = appHistory.results.map(({ id }) => id);

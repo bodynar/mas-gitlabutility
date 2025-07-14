@@ -17,6 +17,6 @@ export type CommonAppState = {
     /** History of app */
     appHistory: AppHistory;
 
-    /** User configure extra branches */
+    /** User configured extra branches */
     extraBranches: Array<string>;
 }

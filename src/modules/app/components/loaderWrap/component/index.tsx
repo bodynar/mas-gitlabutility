@@ -8,6 +8,8 @@ import { ProcessStateLoadingMessageConfig } from "@app/store/app";
 
 import "./style.scss";
 
+import ProgressBar from "../components/progress";
+
 /** Loader wrapper props */
 type LoaderWrapProps = {
     /** Is app currently in loading mode */
@@ -32,16 +34,16 @@ const LoaderWrap: FC<LoaderWrapProps> = ({
     children, processState,
 }) => {
     return (
-        <div className="app-loading-cover">
+        <div
+            className="app-loading-cover"
+            data-loading={loading}
+        >
             {loading &&
                 <div className="app-loading-cover__image">
-                    <div className="loader-wrapper">
-                        <progress
-                            className="progress"
-                            max={processState?.maxState ?? 100}
-                            value={processState?.state ?? undefined}
-                        >{processState?.state ?? undefined}</progress>
-                    </div>
+                    <ProgressBar
+                        max={processState?.maxState ?? 100}
+                        value={processState?.state ?? undefined}
+                    />
                     <ExtraLoadingContent
                         message={message}
                         extra={processState?.message}

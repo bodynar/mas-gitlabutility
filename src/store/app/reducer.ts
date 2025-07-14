@@ -1,20 +1,24 @@
 import { createReducer } from "@reduxjs/toolkit";
 
-import { isNullish, isNullOrEmpty } from "@bodynarf/utils";
+import { isNullish } from "@bodynarf/utils";
 
-import { AppSettings, ApplicationStatus, CommonAppState, SettingsUpdatePair, favoriteGroup, initHistory, removeHistory, resetTemplates, saveHistory, saveSettings, setAppStatus, setExtraBranches, templateSettings, transitIntoLoadingState, updateLoadingProcessingState } from ".";
-import { saveApiInInaccessible } from "../gitlab";
+import { getLocalizedText } from "@app/locale";
 import { appSession } from "@app/shared/values";
+
+import { AppSettings, ApplicationStatus, CommonAppState, SettingsUpdatePair, favoriteGroup, initHistory, removeEmptyHistoryEntries, removeHistory, resetTemplates, saveHistory, saveSettings, setAppStatus, setExtraBranches, templateSettings, transitIntoLoadingState, updateLoadingProcessingState } from ".";
+import { saveApiInInaccessible } from "../gitlab";
 
 const defaultSettings: AppSettings = {
     apiUrl: "",
     gitlabAuthToken: "",
 
-    releaseTagNameTemplate: "",
-    mergeRequestNameTemplate: "",
-    releaseMergeRequestNameTemplate: "",
+    releaseTagNameTemplate: "v",
+    mergeRequestNameTemplate: getLocalizedText("store.app.mergeRequestNameTemplate"),
+    releaseMergeRequestNameTemplate: getLocalizedText("store.app.releaseMergeRequestNameTemplate"),
 
     preloadGroupIds: [],
+    isDarkTheme: false,
+    showLoadingStateAtTaskbar: true,
 };
 
 const defaultState: CommonAppState = {
@@ -67,7 +71,7 @@ export const reducer = createReducer(defaultState,
                         message: message ?? state.loadingStateConfig?.processState?.message,
                         maxState: maxState ?? state.loadingStateConfig?.processState?.maxState,
                     },
-                }
+                };
             })
             .addCase(saveSettings, (state, { payload }) => {
                 const [settings, isInit] = payload;
@@ -87,6 +91,9 @@ export const reducer = createReducer(defaultState,
                         if (key === "preloadGroupIds") {
                             state.previousSettings[key] = (isInit ? value : state.settings[key]) as Array<number>;
                             state.settings[key] = value as Array<number>;
+                        } else if (key === "isDarkTheme" || key === "showLoadingStateAtTaskbar") {
+                            state.previousSettings[key] = (isInit ? value : state.settings[key]) as boolean;
+                            state.settings[key] = !!value;
                         } else {
                             state.previousSettings[key] = (isInit ? value : state.settings[key]) as string;
                             state.settings[key] = value as string;
@@ -110,7 +117,10 @@ export const reducer = createReducer(defaultState,
             })
             .addCase(resetTemplates, (state) => {
                 templateSettings.forEach(key => {
-                    if (key !== "preloadGroupIds") {
+                    if (key !== "preloadGroupIds"
+                        && key !== "isDarkTheme"
+                        && key !== "showLoadingStateAtTaskbar"
+                    ) {
                         state.previousSettings[key] = state.settings[key] as string;
                         state.settings[key] = defaultSettings[key];
                     }
@@ -138,26 +148,33 @@ export const reducer = createReducer(defaultState,
             .addCase(setExtraBranches, (state, { payload }) => {
                 state.extraBranches = [...payload];
             })
+            .addCase(removeEmptyHistoryEntries, (state, { payload }) => {
+                state.appHistory = {
+                    notifications: state.appHistory.notifications.filter(({ sessionId }) => !payload.includes(sessionId)),
+                    results: state.appHistory.results.filter(({ sessionId }) => !payload.includes(sessionId)),
+                    sessions: state.appHistory.sessions.filter(({ id }) => !payload.includes(id)),
+                };
+            })
             ;
     }
 );
 
 /**
- * Check should favorite groups be cleared when api url is changed
+ * Check should favorite groups be cleared when token is changed
  * @param settings New settings values
  * @param previousSettings Current setting values
- * @returns `true` if api url is changed to new value; otherwise - `false`
+ * @returns `true` if api token is changed to new value; otherwise - `false`
  */
 const shouldClearFavoriteGroups = (settings: Array<SettingsUpdatePair>, previousSettings: AppSettings): boolean => {
-    if (isNullOrEmpty(previousSettings.apiUrl) || settings.length === 0) {
+    if (settings.length === 0) {
         return false;
     }
 
-    const apiUrl = settings.find(({ key }) => key === "apiUrl");
+    const apiToken = settings.find(({ key }) => key === "gitlabAuthToken");
 
-    if (isNullish(apiUrl)) {
+    if (isNullish(apiToken)) {
         return false;
     }
 
-    return previousSettings.apiUrl.toLowerCase() === (apiUrl.value as string).toLowerCase();
+    return previousSettings.gitlabAuthToken.toLowerCase() === (apiToken.value as string).toLowerCase();
 };

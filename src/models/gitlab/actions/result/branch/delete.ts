@@ -20,7 +20,7 @@ export enum DeleteBranchErrorType {
     /** Some error caused during operation */
     error = 0,
 
-    /** Master branch not found */
+    /** Branch not found */
     branchNotFound = 1,
 }
 

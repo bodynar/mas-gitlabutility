@@ -2,6 +2,7 @@ import { isNullOrEmpty } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { ActionResultState, CancellationToken, CloseMergeRequestAction, CloseMergeRequestActionError, CloseMergeRequestActionResult, CloseMergeRequestError, ProcessStateEmitter, RequestAmbiguityData } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { actionHandler } from "../common";
 import { closeRequest, deleteBranch, getRequests } from "../../project";
@@ -37,7 +38,7 @@ export const performCloseMergeRequestAction: actionHandler = async (
 
             messageUpdateEventEmitter.trigger({
                 state: index,
-                message: `Processing ${index + 1}\\${action.projects.length}`
+                message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${index + 1}`, `${action.projects.length}`),
             });
 
             const requests = await getRequests(projectId, action.parameters.requestName);
@@ -46,7 +47,7 @@ export const performCloseMergeRequestAction: actionHandler = async (
                 errors.push({
                     projectId,
                     type: CloseMergeRequestActionError.NotFound,
-                    message: "Merge request not found"
+                    message: getLocalizedText("core.gitlab.mergeRequest.requestNotFound")
                 });
 
                 continue;
@@ -101,11 +102,6 @@ export const performCloseMergeRequestAction: actionHandler = async (
         }
     }
 
-    messageUpdateEventEmitter.trigger({
-        state: action.projects.length,
-        message: `Processing ${action.projects.length}\\${action.projects.length}`
-    });
-
     if (cancellationToken.isCancelled) {
         return {
             status: ActionResultState.cancelled,
@@ -114,6 +110,11 @@ export const performCloseMergeRequestAction: actionHandler = async (
             errors: errors.sort((x, y) => x.type - y.type),
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`),
+    });
 
     const status = closed.length > 0
         ? ActionResultState.success

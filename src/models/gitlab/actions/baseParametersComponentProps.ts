@@ -1,4 +1,4 @@
-import { SelectableItem } from "@bodynarf/react.components";
+import { SelectableItem, ValidationState } from "@bodynarf/react.components";
 
 /**
  * Base type for parameters view components
@@ -9,9 +9,6 @@ export interface BaseParametersComponentProps<TParameter> {
 
     /** Branches for dropdown */
     branches: Array<SelectableItem>;
-
-    /** Save new parameters value */
-    setParameters: (parameters: TParameter) => void;
 
     /** Update availability of execute button */
     setCanExecute: (canExecute: boolean) => void;
@@ -29,4 +26,33 @@ export interface BaseParametersComponentProps<TParameter> {
      * @param shouldConfirm Should require additional confirmation
      */
     setShouldConfirm?: (shouldConfirm: boolean) => void;
+
+    /**
+     * Get field validation state
+     * @param key Parameter prop key
+     * @returns Field validation state
+     */
+    getValidationState: (key: keyof TParameter) => ValidationState;
+
+    /**
+     * Update parameter values
+     * @param values Updated values
+     */
+    onValuesChange: (values: Array<ParameterValueChange<TParameter>>) => void;
+
+    /**
+     * Get field required mark display state
+     * @param key Parameter prop key
+     * @returns Flag of visibility
+     */
+    getShouldDisplayRequiredMark: (key: keyof TParameter) => boolean;
 }
+
+/** Action parameter value change data */
+export type ParameterValueChange<TParameter> = {
+    /** Parameter key */
+    key: keyof TParameter;
+
+    /** New value */
+    value: unknown;
+};

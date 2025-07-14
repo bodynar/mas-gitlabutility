@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import { Group } from "@app/models";
 
 import "./style.scss";
@@ -5,7 +7,7 @@ import "./style.scss";
 import ExpandableGroupListItem from "../components/item";
 
 /** Group list expander props type */
-interface ExpandableGroupListProps {
+type ExpandableGroupListProps = {
     /** Groups to display */
     items: Array<Group>;
 
@@ -22,13 +24,13 @@ interface ExpandableGroupListProps {
      * @param selected Current selection value
      */
     onSelectChange: (id: number, type: "group" | "project", selected: boolean) => void;
-}
+};
 
 /** Collapsible container with groups */
-const ExpandableGroupList = ({
+const ExpandableGroupList: FC<ExpandableGroupListProps> = ({
     items, canSelect,
     onSelectChange, selectedProjects,
-}: ExpandableGroupListProps): JSX.Element => {
+}) => {
     return (
         <section
             className="menu app-expandable-menu"

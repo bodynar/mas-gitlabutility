@@ -7,6 +7,7 @@ import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { CloseMergeRequestParameters, CloseMergeRequestActionResult, CloseMergeRequestError } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 
@@ -27,7 +28,7 @@ const CloseMergeRequestResultDisplay: FC<CloseMergeRequestResultDisplayProps> = 
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.requestName}
-                label={{ caption: "MR name", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.requestName"), horizontal: true }}
             />
             <CheckBox
                 disabled
@@ -36,24 +37,24 @@ const CloseMergeRequestResultDisplay: FC<CloseMergeRequestResultDisplayProps> = 
                 onValueChange={emptyFn}
                 style={ElementColor.Link}
                 defaultValue={parameters.removeBranch}
-                label={{ caption: "Delete source branch after", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.mergeRequest.deleteBranchAfter"), horizontal: true }}
             />
             <section>
                 <Accordion
-                    caption={`Closed requests (${result.closed.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.mergeRequest.close.successCaption")} (${result.closed.length})`}
                 >
                     {result.closed.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No requests were closed! 😥
+                            {getLocalizedText("results.mergeRequest.close.noSuccessMessage")}
                         </span>
                         : <ul>
                             {result.closed.map(x =>
                                 <ResultListItem
                                     key={x}
                                     projectId={x}
-                                    text="Merge request closed"
                                     project={projects.get(x)}
+                                    text={getLocalizedText("results.mergeRequest.close.requestClosed")}
                                 />
                             )}
                         </ul>
@@ -62,20 +63,20 @@ const CloseMergeRequestResultDisplay: FC<CloseMergeRequestResultDisplayProps> = 
                 </Accordion>
 
                 <Accordion
-                    caption={`Ambiguity requests (${result.ambiguityItems.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.mergeRequest.ambiguityCaption")} (${result.ambiguityItems.length})`}
                 >
                     {result.ambiguityItems.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No ambiguity requests!
+                            {getLocalizedText("results.mergeRequest.noAmbiguityMessage")}
                         </span>
                         : <ul>
                             {result.ambiguityItems.map(x =>
                                 <ResultListItem
                                     key={x.projectId}
                                     projectId={x.projectId}
-                                    text={`There's ${x.requestsCount} requests with that name in project`}
                                     project={projects.get(x.projectId)}
+                                    text={getLocalizedText("results.mergeRequest.ambiguityItemTemplate").format(`${x.requestsCount}`)}
                                 />
                             )}
                         </ul>
@@ -85,11 +86,11 @@ const CloseMergeRequestResultDisplay: FC<CloseMergeRequestResultDisplayProps> = 
 
                 <Accordion
                     defaultExpanded={result.errors.length > 0}
-                    caption={`Errors (${result.errors.length})`}
+                    caption={`${getLocalizedText("common.errors")} (${result.errors.length})`}
                 >
                     {result.errors.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No errors! Hooray! 🎉
+                            {getLocalizedText("results.noErrorsCaption")}
                         </span>
                         : <ul>
                             {errors.map(({ items }, index) =>

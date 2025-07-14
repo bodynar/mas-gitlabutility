@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { FC, useCallback } from "react";
 
 import { ElementColor } from "@bodynarf/react.components";
 import CheckBox from "@bodynarf/react.components/components/primitives/checkbox";
@@ -6,7 +6,7 @@ import CheckBox from "@bodynarf/react.components/components/primitives/checkbox"
 import { SelectableProject } from "@app/models";
 
 /** Props type of @see ProjectListEntry */
-interface ProjectListEntryProps {
+type ProjectListEntryProps = {
     /** Is projects could be selected */
     canSelect: boolean;
 
@@ -20,13 +20,13 @@ interface ProjectListEntryProps {
      * @param selected Current selection value
      */
     onSelectChange: (id: number, type: "group" | "project", selected: boolean) => void;
-}
+};
 
 /** Single selectable project list item component */
-const ProjectListEntry = ({
+const ProjectListEntry: FC<ProjectListEntryProps> = ({
     canSelect, onSelectChange,
     item
-}: ProjectListEntryProps): JSX.Element => {
+}) => {
     const onSelect = useCallback(
         (value?: boolean) => onSelectChange(item.id, "project", value ?? false),
         [item.id, onSelectChange]

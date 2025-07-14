@@ -1,8 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 
 import { isNullOrUndefined } from "@bodynarf/utils";
 
 import { ActionResult, Actions, Project } from "@app/models";
+import { getLocalizedText } from "@app/locale";
+
+import "./style.scss";
 
 import MergeResultDisplay from "../components/streamMerge/merge";
 import ReleaseResultDisplay from "../components/streamMerge/release";
@@ -17,10 +20,8 @@ import CreateBranchResultDisplay from "../components/branch/create";
 import CloseMergeRequestResultDisplay from "../components/mergeRequest/close";
 import MergeRequestResultDisplay from "../components/mergeRequest/merge";
 
-import "./style.scss";
-
 /** Props of `ResultDisplay` */
-export interface ResultDisplayProps<TResult extends ActionResult> {
+export type ResultDisplayProps<TResult extends ActionResult> = {
     /** Type of performed action */
     action: Actions;
 
@@ -28,15 +29,18 @@ export interface ResultDisplayProps<TResult extends ActionResult> {
     result: TResult;
 
     /** Action parameters */
-    parameters?: object;
+    parameters?: unknown;
 
     /** Available projects */
     projects: Array<Project>;
-}
+};
 
 /** Concrete result display component */
-const ResultDisplay = (props: ResultDisplayProps<ActionResult>): JSX.Element => {
-    let componentFn: (args: ActionResultDisplayProps<any, any>) => JSX.Element = () => <>NOT_FOUND</>;
+const ResultDisplay: FC<ResultDisplayProps<ActionResult>> = (props) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let componentFn: FC<ActionResultDisplayProps<any, any>> = () =>
+        <>{getLocalizedText("results.componentNotFound")}</>
+        ;
 
     switch (props.action) {
         case Actions.merge:
@@ -81,7 +85,7 @@ const ResultDisplay = (props: ResultDisplayProps<ActionResult>): JSX.Element => 
         const project = projectsMap.get(projectId);
 
         return isNullOrUndefined(project)
-            ? `(PROJECT "${projectId}" NOT FOUND)`
+            ? getLocalizedText("results.projectNotFoundTemplate").format(`${projectId}`)
             : `[${project.name}|${project.link}]`
             ;
     }, [projectsMap]);

@@ -20,7 +20,7 @@ export enum CheckNonActualTagsActionErrorType {
     /** Some error caused during operation */
     error = 0,
 
-    /** Master branch not found */
+    /** Branch not found */
     branchNotFound = 1,
 
     /** Specified tag not found */
@@ -38,9 +38,9 @@ export interface NotActualTagInfo {
     /** Link to commit with tag */
     commitLink: string;
 
-    /** SHA of latest commit on master branch */
+    /** SHA of latest commit on branch */
     latestCommitSha: string;
 
-    /** Link to latest commit on master branch */
+    /** Link to latest commit on branch */
     latestCommitLink: string;
 }

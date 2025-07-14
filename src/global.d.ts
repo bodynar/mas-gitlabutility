@@ -4,6 +4,8 @@ declare module "*.scss";
 import { ErrorInfo } from "react";
 
 declare global {
+    /** Application locale (initial value) */
+    declare const appLocale: string;
     interface Window {
         electron: {
             /** Persistent data storage */
@@ -46,9 +48,11 @@ declare global {
                 error: (error: Error, errorInfo: ErrorInfo) => void;
 
                 /**
-                 * Open current error log file
+                 * Open error log file
+                 * @param date Log file formatted date
+                 * @returns Is log file for requested date exists
                  */
-                open: () => void;
+                open: (date: string) => boolean;
 
                 /**
                  * Open error logs folder
@@ -72,6 +76,13 @@ declare global {
                  * @param callback Obligatory function
                  */
                 onBeforeAppClose: (callback: () => Promise<void>) => void;
+
+                /**
+                 * Update loading state at taskbar if app is minimized
+                 * @param state Current state (in range [0; 1.0])
+                 * @param important Is important update (suppress checks)
+                 */
+                updateLoadingState: (state: number, important = false) => void;
             }
         };
     }

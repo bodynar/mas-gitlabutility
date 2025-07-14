@@ -59,5 +59,10 @@ export const removeHistory = createAction("mas.gua/app/removeHistory");
 /**
  * Save user configured extra branches
  * @param _ Extra branches
- */
+*/
 export const setExtraBranches = createAction<Array<string>>("mas.gua/app/setExtraBranches");
+
+/**
+ * Remove empty history entries
+ */
+export const removeEmptyHistoryEntries = createAction<Array<string>>("mas.gua/app/removeEmptyHistoryEntries");

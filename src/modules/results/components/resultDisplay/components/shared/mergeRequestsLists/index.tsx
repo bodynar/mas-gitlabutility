@@ -5,6 +5,7 @@ import Anchor from "@bodynarf/react.components/components/anchor/component";
 import Accordion from "@bodynarf/react.components/components/accordion";
 
 import { MergeActionResult, MergeResult, NotMergedRequestInfo as NotMergedRequestInfoModel, Project } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import CopyToClipboardButton from "../copyToClipboardBtn";
 import AnchorToProject from "../anchorToProject";
@@ -28,36 +29,54 @@ const MergeRequestsList: FC<MergeRequestsListProps> = ({
 }) => {
     const onCopySuccessClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Merged MR's:\n\n${mergedRequests
+            getLocalizedText("results.mergeRequest.mergedRequests")
+            + ":\n\n"
+            + mergedRequests
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
 
-                    return `- ${projectLink}: Merge request "${x.ref}" merged in [${x.mergeCommitSha}|${x.link}]`;
+                    return getLocalizedText("results.mergeRequest.list.copySuccessCaptionItemTemplate")
+                        .format(
+                            projectLink,
+                            x.ref,
+                            x.mergeCommitSha,
+                            x.link
+                        );
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, mergedRequests]);
 
     const onCopyFailureClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Not merged MR's:\n\n${notMergedRequests
+            getLocalizedText("results.mergeRequest.list.notSuccessCaption")
+            + ":\n\n"
+            + notMergedRequests
                 .map(x => {
                     const project = projects.get(x.projectId);
                     const projectLink = getProjectJiraRef(x.projectId);
 
                     if (!isNullOrUndefined(x.id)) {
-                        if (isNullOrEmpty(x.ref)) {
-                            return `${projectLink}: Merge request [!${x.id}|${project.link}/-/merge_requests/${x.id}] not merged: "${x.reason}"`;
-                        }
+                        const link = isNullOrEmpty(x.ref)
+                            ? `${project.link}/-/merge_requests/${x.id}`
+                            : x.link;
 
-                        return `${projectLink}: Merge request [${x.ref}|${x.link}] not merged: "${x.reason}"`;
+                        return getLocalizedText("results.mergeRequest.list.copyNotSuccessCaptionItemTemplate")
+                            .format(
+                                projectLink,
+                                x.ref,
+                                link,
+                                x.reason
+                            );
                     }
 
-                    return `${projectLink}: Merge request not created: "${x.reason}"`;
+                    return getLocalizedText("results.mergeRequest.list.copyNotCreatedMergeRequestItemTemplate")
+                        .format(
+                            projectLink,
+                            x.reason
+                        );
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, notMergedRequests, projects]);
 
@@ -67,65 +86,57 @@ const MergeRequestsList: FC<MergeRequestsListProps> = ({
         <section role="merge-results">
             <Accordion
                 defaultExpanded={notMergedRequests.length > 0}
-                caption={`Not merged MR's (${notMergedRequests.length})`}
+                caption={`${getLocalizedText("results.mergeRequest.list.notSuccessCaption")} (${notMergedRequests.length})`}
             >
                 {notMergedRequests.length === 0 &&
                     <p className="is-italic has-text-grey pb-2">
-                        There&apos;s no not merged MR&apos;s! Hooray! 🎉
+                        {getLocalizedText("results.mergeRequest.list.notSuccessEmpty")}
                     </p>
                 }
                 {notMergedRequests.length > 0 &&
                     <>
-                        <div className="top-right-btn-wrapper">
-                            <div>
-                                <CopyToClipboardButton
-                                    onClick={onCopyFailureClick}
-                                    title="Copy to clipboard for JIRA"
-                                />
-                            </div>
-                        </div>
-                        <p className="is-italic has-text-grey pb-2">
-                            These requests cannot be merged due to some errors. Please, merge it manually
-                        </p>
-                        <ul>
-                            {errors.map(({ items }, index) =>
-                                <>
-                                    {items.map(x =>
-                                        <NotMergedRequestInfo
-                                            key={x.id ?? x.projectId}
+                        <div>
+                            <p className="is-italic has-text-grey pb-2">
+                                {getLocalizedText("results.mergeRequest.list.notSuccessError")}
+                            </p>
+                            <ul>
+                                {errors.map(({ items }, index) =>
+                                    <>
+                                        {items.map(x =>
+                                            <NotMergedRequestInfo
+                                                key={x.id ?? x.projectId}
 
-                                            notMergedRequest={x}
-                                            projectId={x.projectId}
-                                            project={projects.get(x.projectId)}
-                                        />
-                                    )}
-                                    {index !== errors.length - 1 &&
-                                        <li>
-                                            <br />
-                                        </li>
-                                    }
-                                </>
-                            )}
-                        </ul>
+                                                notMergedRequest={x}
+                                                projectId={x.projectId}
+                                                project={projects.get(x.projectId)}
+                                            />
+                                        )}
+                                        {index !== errors.length - 1 &&
+                                            <li>
+                                                <br />
+                                            </li>
+                                        }
+                                    </>
+                                )}
+                            </ul>
+                        </div>
+                        <CopyToClipboardButton
+                            onClick={onCopyFailureClick}
+                            title={getLocalizedText("results.copyToClipboard")}
+                        />
                     </>
                 }
             </Accordion>
-            <Accordion caption={`Merged MR's (${mergedRequests.length})`}>
+            <Accordion
+                caption={`${getLocalizedText("results.mergeRequest.mergedRequests")} (${mergedRequests.length})`}
+            >
                 {mergedRequests.length === 0 &&
                     <p className="is-italic has-text-grey pb-2">
-                        There&apos;s no merged MR&apos;s! So sad! 😥
+                        {getLocalizedText("results.mergeRequest.noMergedRequests")}
                     </p>
                 }
                 {mergedRequests.length > 0 &&
                     <>
-                        <div className="top-right-btn-wrapper">
-                            <div>
-                                <CopyToClipboardButton
-                                    onClick={onCopySuccessClick}
-                                    title="Copy to clipboard for JIRA"
-                                />
-                            </div>
-                        </div>
                         <ul>
                             {mergedRequests.map(x =>
                                 <MergedRequestInfo
@@ -136,6 +147,10 @@ const MergeRequestsList: FC<MergeRequestsListProps> = ({
                                 />
                             )}
                         </ul>
+                        <CopyToClipboardButton
+                            onClick={onCopySuccessClick}
+                            title={getLocalizedText("results.copyToClipboard")}
+                        />
                     </>
                 }
             </Accordion>
@@ -169,12 +184,12 @@ const NotMergedRequestInfo: FC<NotMergedRequestInfoProps> = ({
                         <AnchorToProject
                             project={project}
                             projectId={projectId}
-                        />: Merge request <Anchor
+                        />: {getLocalizedText("results.mergeRequest.list.mergeRequest")} <Anchor
                             target="_blank"
                             className="is-underlined"
                             href={`${project.link}/-/merge_requests/${notMergedRequest.id}`} // TODO: find better solution
                             caption={`!${notMergedRequest.id}`}
-                        /> not merged: <span className="has-text-danger">
+                        /> {getLocalizedText("results.mergeRequest.list.notMerged")}: <span className="has-text-danger">
                             {notMergedRequest.reason}
                         </span>
                     </span>
@@ -188,12 +203,12 @@ const NotMergedRequestInfo: FC<NotMergedRequestInfoProps> = ({
                     <AnchorToProject
                         project={project}
                         projectId={projectId}
-                    />: Merge request <Anchor
+                    />: {getLocalizedText("results.mergeRequest.list.mergeRequest")} <Anchor
                         target="_blank"
                         className="is-underlined"
                         href={notMergedRequest.link}
                         caption={notMergedRequest.ref}
-                    /> not merged: <span className="has-text-danger">
+                    /> {getLocalizedText("results.mergeRequest.list.notMerged")}: <span className="has-text-danger">
                         {notMergedRequest.reason}
                     </span>
                 </span>
@@ -207,7 +222,7 @@ const NotMergedRequestInfo: FC<NotMergedRequestInfoProps> = ({
                 <AnchorToProject
                     project={project}
                     projectId={projectId}
-                />: Merge request not created: <span className="has-text-danger">
+                />: {getLocalizedText("results.mergeRequest.list.mergeRequestNotCreated")}: <span className="has-text-danger">
                     {notMergedRequest.reason}
                 </span>
             </span>
@@ -237,7 +252,7 @@ const MergedRequestInfo: FC<MergedRequestInfoProps> = ({
                 <AnchorToProject
                     project={project}
                     projectId={projectId}
-                />: Merge request {mergedRequest.ref} merged in <Anchor
+                />: {getLocalizedText("results.mergeRequest.list.mergeRequestMergedTemplate").format(mergedRequest.ref)} <Anchor
                     target="_blank"
                     className="is-underlined"
                     href={mergedRequest.link}

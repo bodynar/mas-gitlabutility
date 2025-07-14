@@ -1,11 +1,12 @@
 import { Action, ThunkAction, ThunkDispatch } from "@reduxjs/toolkit";
 
 import { NotificationReference } from "@app/models";
+import { getLocalizedText, LocaleKeys } from "@app/locale";
 import { createSuccess } from "@app/core";
 
 import { GlobalAppState } from "@app/store";
 import { ApplicationStatus, setAppStatus } from "@app/store/app";
-import { ShowSimpleMessageFn, showNotifications } from "@app/store/notificator";
+import { ShowLocalizedMessageFn, showNotifications } from "@app/store/notificator";
 
 /**
  * Create dispatch-based action to display success message
@@ -14,11 +15,15 @@ import { ShowSimpleMessageFn, showNotifications } from "@app/store/notificator";
  */
 export const getDisplaySuccessFn = (
     dispatch: ThunkDispatch<GlobalAppState, unknown, Action>
-): ShowSimpleMessageFn => {
-    return (message: string, important?: boolean, removeLoadingState?: boolean, link?: NotificationReference) => {
+): ShowLocalizedMessageFn => {
+    return (message: keyof LocaleKeys, important?: boolean, removeLoadingState?: boolean, link?: NotificationReference) => {
         dispatch(
             showNotifications(
-                [createSuccess(message, important ?? false, link)]
+                [createSuccess(
+                    getLocalizedText(message),
+                    important ?? false,
+                    link
+                )]
             )
         );
 
@@ -30,13 +35,13 @@ export const getDisplaySuccessFn = (
 
 /**
  * Create redux thunk to display success notification
- * @param message Message to display
+ * @param message Message to display locale key
  * @param important Should message stay on screen until manual user close action
  * @param removeLoadingState Should app loading state be removed
  * @param link Link configuration
  */
 export const displaySuccess = (
-    message: string,
+    message: keyof LocaleKeys,
     important?: boolean,
     removeLoadingState?: boolean,
     link?: NotificationReference

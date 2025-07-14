@@ -10,12 +10,13 @@ import { ActionBuilder } from "..";
  */
 export const buildCheckNonActualTagsActionConfig: ActionBuilder<CheckNonActualTagsAction, CheckNonActualTagsParameters> = (
     projectIds: Array<number>,
-    { name }: CheckNonActualTagsParameters
+    { name, branch }: CheckNonActualTagsParameters
 ): CheckNonActualTagsAction => {
     return new CheckNonActualTagsAction(
         projectIds,
         {
-            name
+            name,
+            branch
         }
     );
 };

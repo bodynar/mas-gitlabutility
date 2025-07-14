@@ -1,10 +1,13 @@
 import { FC, useCallback, useMemo } from "react";
 
 import { emptyFn } from "@bodynarf/utils";
+import { ElementColor } from "@bodynarf/react.components";
 import Accordion from "@bodynarf/react.components/components/accordion";
+import CheckBox from "@bodynarf/react.components/components/primitives/checkbox";
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { CreateBranchActionError, CreateBranchActionResult, CreateBranchParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 import CopyToClipboardButton from "../../shared/copyToClipboardBtn";
@@ -21,14 +24,20 @@ const CreateBranchResultDisplay: FC<CreateBranchResultDisplayProps> = ({
 
     const onCopyErrorsClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Create new branch "${parameters.branchName}" from "${parameters.source}" errors:\n\n${result.errors
+            getLocalizedText("results.branch.create.captionTemplate").format(
+                parameters.branchName,
+                parameters.source
+            )
+            + ": "
+            + getLocalizedText("results.errors")
+            + "\n\n"
+            + result.errors
                 .map(({ projectId, message }) => {
                     const projectLink = getProjectJiraRef(projectId);
 
-                    return `- ${projectLink}: Error "${message}"`;
+                    return `- ${projectLink}: ${getLocalizedText("common.error")} "${message}"`;
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.branchName, parameters.source, result.errors]);
 
@@ -38,31 +47,40 @@ const CreateBranchResultDisplay: FC<CreateBranchResultDisplayProps> = ({
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.source}
-                label={{ caption: "Source branch", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.from"), horizontal: true }}
             />
             <Text
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.branchName}
-                label={{ caption: "Branch name", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.branch.branchName"), horizontal: true }}
+            />
+            <CheckBox
+                disabled
+                isFormLabel
+                fixBackgroundColor
+                onValueChange={emptyFn}
+                style={ElementColor.Link}
+                defaultValue={parameters.saveAsAdditionalBranch ?? false}
+                label={{ caption: getLocalizedText("parameters.branch.create.saveBranchAsAdditionalBranch"), horizontal: true }}
             />
             <hr />
             <section>
                 <Accordion
-                    caption={`Created branches (${result.success.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.branch.create.successCaption")} (${result.success.length})`}
                 >
                     {result.success.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No branches were created! 😥
+                            {getLocalizedText("results.branch.create.noSuccessCaption")}
                         </span>
                         : <ul>
                             {result.success.map(x =>
                                 <ResultListItem
                                     key={x}
                                     projectId={x}
-                                    text="Branch created"
                                     project={projects.get(x)}
+                                    text={getLocalizedText("results.branch.create.branchCreatedMessage")}
                                 />
                             )}
                         </ul>
@@ -72,21 +90,13 @@ const CreateBranchResultDisplay: FC<CreateBranchResultDisplayProps> = ({
 
                 <Accordion
                     defaultExpanded={result.errors.length > 0}
-                    caption={`Errors (${result.errors.length})`}
+                    caption={`${getLocalizedText("common.errors")} (${result.errors.length})`}
                 >
                     {result.errors.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No errors! Hooray! 🎉
+                            {getLocalizedText("results.noErrorsCaption")}
                         </span>
                         : <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyErrorsClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {errors.map(({ items }, index) =>
                                     <>
@@ -108,6 +118,10 @@ const CreateBranchResultDisplay: FC<CreateBranchResultDisplayProps> = ({
                                     </>
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyErrorsClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>

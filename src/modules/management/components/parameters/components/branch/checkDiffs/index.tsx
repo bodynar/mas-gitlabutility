@@ -1,107 +1,85 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback } from "react";
 
-import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
+import { isNullOrUndefined } from "@bodynarf/utils";
+import { useMount } from "@bodynarf/react.components";
 import Button from "@bodynarf/react.components/components/button/component";
 import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
 
-import { BaseParametersComponentProps, CheckDiffsParameters, DefaultBranch } from "@app/models";
+import { BaseParametersComponentProps, CheckDiffsParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
+import { createValidationConfig, ParametersValidationConfigProvider } from "../../..";
 
-/** Check diffs parameters configuration props*/
-type CheckDiffsParametersProps = BaseParametersComponentProps<CheckDiffsParameters>;
+/** Props of `CheckDiffsParametersConfiguration` */
+type CheckDiffsParametersConfigurationProps = BaseParametersComponentProps<CheckDiffsParameters>;
 
-const CheckDiffsParametersConfiguration: FC<CheckDiffsParametersProps> = ({
+/** Check diffs parameters configuration component */
+const CheckDiffsParametersConfiguration: FC<CheckDiffsParametersConfigurationProps> = ({
     branches,
-    parameters, setParameters,
-    setCanExecute, setError,
+    parameters, onValuesChange,
+    setCanExecute,
 }) => {
     const selectedFrom = branches.find(({ value }) => parameters?.source === value);
     const selectedTo = branches.find(({ value }) => parameters?.target === value);
 
-    const updateParametersValues = useCallback(
-        (source?: DefaultBranch, target?: DefaultBranch) => {
-            setParameters({
-                ...parameters,
-
-                source: source,
-                target: target,
-            });
-        },
-        [parameters, setParameters]
-    );
-
     const onFromBranchSelected = useCallback(
-        (value?: SelectableItem) => {
-            updateParametersValues(
-                value?.value as DefaultBranch,
-                parameters.target as DefaultBranch,
-            );
-        }, [parameters, updateParametersValues]
+        (value?: SelectableItem) => onValuesChange([{ key: "source", value: value?.value }]),
+        [onValuesChange]
     );
 
     const onToBranchSelected = useCallback(
-        (value?: SelectableItem) => {
-            updateParametersValues(
-                parameters.source as DefaultBranch,
-                value?.value as DefaultBranch,
-            );
-        },
-        [parameters.source, updateParametersValues]
+        (value?: SelectableItem) => onValuesChange([{ key: "target", value: value?.value }]),
+        [onValuesChange]
     );
 
     const onSwitchBranchClick = useCallback(
-        () => {
-            updateParametersValues(
-                parameters.target as DefaultBranch,
-                parameters.source as DefaultBranch,
-            );
-        }, [parameters.source, parameters.target, updateParametersValues]);
+        () => onValuesChange([
+            { key: "source", value: parameters.target },
+            { key: "target", value: parameters.source }
+        ]),
+        [onValuesChange, parameters.source, parameters.target]
+    );
 
-
-    useEffect(() => {
-        if (isNullOrEmpty(parameters?.source) || isNullOrEmpty(parameters?.target)) {
-            setCanExecute(false);
-            return;
-        }
-
+    useMount(() => {
         if (parameters.source === parameters.target) {
-            setCanExecute(false);
-            setError("From branch cannot be same as target branch");
             return;
         }
 
         setCanExecute(true);
-    }, [parameters, setCanExecute, setError]);
+    });
 
     return (
-        <section>
+        <section role="parameters">
             <div className="columns">
                 <div className="column">
                     <Dropdown
-                        hideOnOuterClick
-                        placeholder="From"
-                        value={selectedFrom}
                         items={branches}
+                        hideOnOuterClick
+                        value={selectedFrom}
                         onSelect={onFromBranchSelected}
-                        label={{ caption: "From", horizontal: false, }}
+                        placeholder={getLocalizedText("parameters.from")}
+                        label={{ caption: getLocalizedText("parameters.from"), horizontal: false, }}
                     />
                 </div>
-                <div className="column is-1 is-flex is-align-items-flex-end is-justify-content-center" id="switchBranchesContainer">
+                <div
+                    id="switchBranchesContainer"
+                    className="column is-1 is-flex is-align-items-flex-end is-justify-content-center"
+                >
                     <Button
                         type="white"
-                        title="Switch branches"
                         icon={{ name: "arrow-down-up" }}
                         onClick={onSwitchBranchClick}
+                        title={getLocalizedText("management.parameters.switchBranches")}
                         disabled={isNullOrUndefined(selectedFrom) || isNullOrUndefined(selectedTo)}
                     />
                 </div>
                 <div className="column">
                     <Dropdown
-                        placeholder="To"
+                        items={branches}
                         hideOnOuterClick
                         value={selectedTo}
-                        items={branches}
                         onSelect={onToBranchSelected}
-                        label={{ caption: "To", horizontal: false, }}
+                        placeholder={getLocalizedText("parameters.to")}
+                        label={{ caption: getLocalizedText("parameters.to"), horizontal: false, }}
                     />
                 </div>
             </div>
@@ -110,3 +88,26 @@ const CheckDiffsParametersConfiguration: FC<CheckDiffsParametersProps> = ({
 };
 
 export default CheckDiffsParametersConfiguration;
+
+/**
+ * Get current component parameters validation config provider fn
+ * @returns Validator config provider fn
+ */
+export const getValidationConfig: ParametersValidationConfigProvider<CheckDiffsParameters> = () =>
+    createValidationConfig<CheckDiffsParameters>([
+        [
+            null, [
+                ({ source, target }) => source === target
+                    ? getLocalizedText("management.parameters.sourceBranchSameAsTarget")
+                    : null,
+            ]
+        ],
+        [
+            null, [
+                ({ source, target }) => source === target
+                    ? getLocalizedText("management.parameters.sourceBranchSameAsTarget")
+                    : null,
+            ]
+        ]
+    ]);
+

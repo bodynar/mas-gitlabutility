@@ -1,15 +1,33 @@
 import { get } from "@app/core";
 import { Project } from "@app/models";
 
+const ITEMS_PER_PAGE = 100;
+
 /**
  * Get all projects in specific group
  * @param groupId Group identifier value
  * @returns Promise with all projects in specific group
  */
 export const getProjects = async (groupId: number): Promise<Array<Project>> => {
-    const groupDataItems = await get<Array<GetProjectsResponse>>(`/groups/${groupId}/projects?archived=false&per_page=100`); // TODO: load while page is empty
+    const loadedItems: Array<GetProjectsResponse> = [];
 
-    return groupDataItems
+    let counter = 0;
+
+    while (counter++ < 100) {
+        const pageItems = await get<Array<GetProjectsResponse>>(`/groups/${groupId}/projects?archived=false&per_page=${ITEMS_PER_PAGE}&page=${counter}`);
+
+        if (pageItems.length === 0) {
+            break;
+        }
+
+        loadedItems.push(...pageItems);
+
+        if (pageItems.length < ITEMS_PER_PAGE) {
+            break;
+        }
+    }
+
+    return loadedItems
         .map(x => ({
             id: x.id,
             link: x.web_url,
@@ -24,6 +42,7 @@ export const getProjects = async (groupId: number): Promise<Array<Project>> => {
             openIssuesCount: +x.open_issues_count,
             groupId,
         }) as Project)
+        .withoutDuplicateBy(({ id }) => id)
         .sort((l, r) => l.fullName.localeCompare(r.fullName))
         ;
 };

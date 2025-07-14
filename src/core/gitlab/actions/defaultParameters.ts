@@ -1,4 +1,4 @@
-import { Actions, CheckDiffsParameters, CheckNonActualTagsParameters, DefaultBranch, MergeParameters, MoveTagParameters, ReleaseParameters } from "@app/models";
+import { Actions, CheckDiffsParameters, CheckNonActualTagsParameters, CloseMergeRequestParameters, CreateBranchParameters, DefaultBranch, DeleteBranchParameters, MergeParameters, MergeRequestParameters, MoveTagParameters, ReleaseParameters } from "@app/models";
 import { AppSettings } from "@app/store/app";
 
 /**
@@ -27,7 +27,67 @@ export const getDefaultParameters = (
     return builderFn(appSettings);
 };
 
-//#region Builder
+// #region Branch
+
+/**
+ * Default parameters for check diffs action provider
+ * @returns Instance of @see CheckDiffsParameters
+ */
+const checkDiffsParametersBuilder: parametersBuilder = () => {
+    return {
+        source: DefaultBranch.Master,
+        target: DefaultBranch.Test,
+    } as CheckDiffsParameters;
+};
+
+/**
+ * Default parameters for create branch action provider
+ * @returns Instance of @see CreateBranchParameters
+ */
+const createBranchParametersBuilder: parametersBuilder = () => {
+    return {
+        source: DefaultBranch.Develop,
+        saveAsAdditionalBranch: false,
+    } as CreateBranchParameters;
+};
+
+/**
+ * Default parameters for delete branch action provider
+ * @returns Instance of @see DeleteBranchParameters
+ */
+const deleteBranchParametersBuilder: parametersBuilder = () => {
+    return {
+        branchName: null,
+    } as DeleteBranchParameters;
+};
+
+// #endregion
+
+// #region Merge request
+
+/**
+ * Default parameters for close merge request action provider
+ * @returns Instance of @see CloseMergeRequestParameters
+ */
+const closeMergeRequestParametersBuilder: parametersBuilder = () => {
+    return {
+        requestName: null,
+    } as CloseMergeRequestParameters;
+};
+
+/**
+ * Default parameters for merge MR action provider
+ * @returns Instance of @see MergeRequestParameters
+ */
+const mergeRequestParametersBuilder: parametersBuilder = () => {
+    return {
+        requestName: null,
+    } as MergeRequestParameters;
+};
+
+// #endregion
+
+// #region Stream merge
 
 /**
  * Default parameters for merge action provider
@@ -54,8 +114,15 @@ const releaseParametersBuilder: parametersBuilder = (appSettings: AppSettings) =
         version: appSettings.releaseTagNameTemplate,
         mergeRequestName: appSettings.releaseMergeRequestNameTemplate.format(appSettings.releaseTagNameTemplate),
         template: appSettings.releaseMergeRequestNameTemplate,
+        tagVersionTemplate: appSettings.releaseTagNameTemplate,
+        testBranch: DefaultBranch.Test,
+        productionBranch: DefaultBranch.Master,
     } as ReleaseParameters;
 };
+
+// #endregion
+
+// #region Tag
 
 /**
  * Default parameters for move tag action provider
@@ -66,18 +133,8 @@ const moveTagParametersBuilder: parametersBuilder = ({ releaseTagNameTemplate }:
     return {
         createIfNotExist: false,
         name: releaseTagNameTemplate,
+        branch: DefaultBranch.Master,
     } as MoveTagParameters;
-};
-
-/**
- * Default parameters for check diffs action provider
- * @returns Instance of @see CheckDiffsParameters
- */
-const checkDiffsParametersBuilder: parametersBuilder = () => {
-    return {
-        source: DefaultBranch.Master,
-        target: DefaultBranch.Test,
-    } as CheckDiffsParameters;
 };
 
 /**
@@ -88,18 +145,26 @@ const checkDiffsParametersBuilder: parametersBuilder = () => {
 const checkNonActualTagsParametersBuilder: parametersBuilder = ({ releaseTagNameTemplate }: AppSettings) => {
     return {
         name: releaseTagNameTemplate,
+        branch: DefaultBranch.Master,
     } as CheckNonActualTagsParameters;
 };
 
-//#endregion
+// #endregion
 
 /**
  * Set of builders for each action
  */
 const defaultParametersProviders: Map<Actions, parametersBuilder> = new Map([
+    [Actions.checkDiffs, checkDiffsParametersBuilder],
+    [Actions.createBranch, createBranchParametersBuilder],
+    [Actions.deleteBranch, deleteBranchParametersBuilder],
+
+    [Actions.closeMergeRequest, closeMergeRequestParametersBuilder],
+    [Actions.mergeRequest, mergeRequestParametersBuilder],
+
     [Actions.merge, mergeParametersBuilder],
     [Actions.release, releaseParametersBuilder],
+
     [Actions.moveTag, moveTagParametersBuilder],
-    [Actions.checkDiffs, checkDiffsParametersBuilder],
     [Actions.checkNonActualTags, checkNonActualTagsParametersBuilder],
 ]);

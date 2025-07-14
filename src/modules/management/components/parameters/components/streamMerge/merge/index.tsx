@@ -1,20 +1,27 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 
 import { isNullOrEmpty, isNullOrUndefined } from "@bodynarf/utils";
+import { useMount } from "@bodynarf/react.components";
 import Button from "@bodynarf/react.components/components/button/component";
 import Dropdown, { SelectableItem } from "@bodynarf/react.components/components/dropdown";
 import Text from "@bodynarf/react.components/components/primitives/text/component";
 import Icon from "@bodynarf/react.components/components/icon/component";
 
-import { Actions, actionToDescriptionMap, BaseParametersComponentProps, DEFAULT_BRANCHES, DefaultBranch, MergeParameters } from "@app/models";
+import { Actions, BaseParametersComponentProps, DEFAULT_BRANCHES, DefaultBranch, MergeParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
-/** Merge parameters configuration props*/
-type MergeParametersProps = BaseParametersComponentProps<MergeParameters>;
+import { createValidationConfig, ParametersValidationConfigProvider } from "../../..";
+import { getActionDescription } from "@app/core/gitlab/actions";
 
-const MergeParametersConfiguration: FC<MergeParametersProps> = ({
+/** Props of `MergeParametersConfiguration` */
+type MergeParametersConfigurationProps = BaseParametersComponentProps<MergeParameters>;
+
+/** Merge parameters configuration */
+const MergeParametersConfiguration: FC<MergeParametersConfigurationProps> = ({
     branches,
-    parameters, setParameters,
-    setCanExecute, setError, setShouldConfirm,
+    parameters,
+    setCanExecute, setShouldConfirm,
+    getValidationState, onValuesChange,
 }) => {
     const selectedFrom = branches.find(({ value }) => parameters?.sourceBranch === value);
     const selectedTo = branches.find(({ value }) => parameters?.targetBranch === value);
@@ -32,17 +39,16 @@ const MergeParametersConfiguration: FC<MergeParametersProps> = ({
                 : parameters.template.format(source, target);
 
             setShouldConfirm(shouldConfirm);
-            setParameters({
-                ...parameters,
+            onValuesChange([
+                { key: "name", value: formattedName },
+                { key: "sourceBranch", value: source },
+                { key: "targetBranch", value: target }
+            ]);
 
-                name: formattedName,
-                sourceBranch: source,
-                targetBranch: target,
-            });
             manualRerender(x => ++x);
             setHintVisibility(target === DefaultBranch.Master);
         },
-        [isManualName, parameters, setParameters, setShouldConfirm]
+        [isManualName, parameters, onValuesChange, setShouldConfirm]
     );
 
     const onFromBranchSelected = useCallback(
@@ -75,56 +81,38 @@ const MergeParametersConfiguration: FC<MergeParametersProps> = ({
     const onMrNameChange = useCallback(
         (name?: string) => {
             setIsManualName(true);
-            setParameters({
-                ...parameters,
-                name,
-            });
-        }, [parameters, setParameters]
+            onValuesChange([{ key: "name", value: name }]);
+        }, [onValuesChange]
     );
 
     const onUseTemplateClick = useCallback(() => {
-        setParameters({
-            ...parameters,
-            name: parameters.template.format(parameters.sourceBranch, parameters.targetBranch),
-        });
+        onValuesChange([{ key: "name", value: parameters.template.format(parameters.sourceBranch, parameters.targetBranch) }]);
         manualRerender(x => ++x);
         setIsManualName(false);
-    }, [parameters, setParameters]);
+    }, [parameters, onValuesChange]);
 
-    useEffect(() => {
-        if (isNullOrEmpty(parameters?.sourceBranch) || isNullOrEmpty(parameters?.targetBranch)) {
-            setCanExecute(false);
-            return;
-        }
-
-        if (parameters.sourceBranch === parameters.targetBranch) {
-            setCanExecute(false);
-            setError("From branch cannot be same as target branch");
-            return;
-        }
-
-        if (isNullOrEmpty(parameters.name)) {
-            setCanExecute(false);
-            setError("Name must be set");
+    useMount(() => {
+        if (isNullOrEmpty(parameters?.name) || parameters.sourceBranch === parameters.targetBranch) {
             return;
         }
 
         setCanExecute(true);
-    }, [parameters, setCanExecute, setError]);
+    });
 
     return (
-        <section role="merge-parameters">
+        <section role="parameters">
             <div className="columns">
                 <div className="column">
                     <Text
                         key={manualRerenderCount}
                         onValueChange={onMrNameChange}
                         defaultValue={parameters?.name}
-                        label={{ caption: "MR name", horizontal: false }}
+                        validationState={getValidationState("name")}
+                        label={{ caption: getLocalizedText("parameters.requestName"), horizontal: false, }}
                         hint={isManualName ? undefined : {
-                            content: "Once you make changes here, the template will no longer apply",
-                            italic: true,
                             grey: true,
+                            italic: true,
+                            content: getLocalizedText("management.parameters.streamMerge.templateWouldNotBeApplied"),
                         }}
                     />
                 </div>
@@ -134,8 +122,8 @@ const MergeParametersConfiguration: FC<MergeParametersProps> = ({
                     <div className="column">
                         <Button
                             type="white"
-                            caption="Use template from setting"
                             onClick={onUseTemplateClick}
+                            caption={getLocalizedText("management.parameters.streamMerge.useTemplate")}
                         />
                     </div>
                 </div>
@@ -144,37 +132,40 @@ const MergeParametersConfiguration: FC<MergeParametersProps> = ({
                 <div className="column">
                     <Dropdown
                         hideOnOuterClick
-                        placeholder="From"
-                        value={selectedFrom}
                         items={branches}
+                        value={selectedFrom}
                         onSelect={onFromBranchSelected}
-                        label={{ caption: "From", horizontal: false, }}
+                        placeholder={getLocalizedText("parameters.from")}
+                        label={{ caption: getLocalizedText("parameters.from"), horizontal: false, }}
                     />
                 </div>
-                <div className="column is-1 is-flex is-align-items-flex-end is-justify-content-center" id="switchBranchesContainer">
+                <div
+                    id="switchBranchesContainer"
+                    className="column is-1 is-flex is-align-items-flex-end is-justify-content-center"
+                >
                     <Button
                         type="white"
-                        title="Switch branches"
-                        icon={{ name: "arrow-down-up" }}
                         onClick={onSwitchBranchClick}
+                        icon={{ name: "arrow-down-up" }}
+                        title={getLocalizedText("management.parameters.switchBranches")}
                         disabled={isNullOrUndefined(selectedFrom) || isNullOrUndefined(selectedTo)}
                     />
                 </div>
                 <div className="column">
                     <Dropdown
-                        placeholder="To"
+                        items={branches}
                         hideOnOuterClick
                         value={selectedTo}
-                        items={branches}
                         onSelect={onToBranchSelected}
-                        label={{ caption: "To", horizontal: false, }}
+                        placeholder={getLocalizedText("parameters.to")}
+                        label={{ caption: getLocalizedText("parameters.to"), horizontal: false, }}
                     />
                 </div>
             </div>
             {isHintVisible &&
                 <div className="columns">
                     <p className="column has-text-right is-italic">
-                        <Icon name="question-circle" /> If you want to perform an release, please, use action called &quot;{actionToDescriptionMap.get(Actions.release)}&quot;
+                        <Icon name="question-circle" /> {getLocalizedText("management.parameters.streamMerge.merge.releaseNoteTemplate").format(getActionDescription(Actions.release))}
                     </p>
                 </div>
             }
@@ -183,6 +174,28 @@ const MergeParametersConfiguration: FC<MergeParametersProps> = ({
 };
 
 export default MergeParametersConfiguration;
+
+/**
+ * Get current component parameters validation config provider fn
+ * @returns Validator config provider fn
+ */
+export const getValidationConfig: ParametersValidationConfigProvider<MergeParameters> = () => createValidationConfig<MergeParameters>([
+    [
+
+        "name", [
+            ({ name }) => isNullOrEmpty(name)
+                ? getLocalizedText("management.parameters.streamMerge.merge.nameMustBeSet")
+                : null,
+        ]
+    ],
+    [
+        null, [
+            ({ sourceBranch, targetBranch }) => sourceBranch === targetBranch
+                ? getLocalizedText("management.parameters.sourceBranchSameAsTarget")
+                : null,
+        ]
+    ]
+]);
 
 /**
  * Check need extra confirmation for merge action

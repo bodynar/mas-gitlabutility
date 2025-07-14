@@ -1,0 +1,68 @@
+@use "src/shared/styles.scss" as vars;
+
+.app-mode-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+
+    .bbr-icon {
+        cursor: pointer;
+
+        &.bi-sun:hover,
+        &.bi-sun-fill {
+            color: #ffc900;
+        }
+
+        &.bi-moon:hover,
+        &.bi-moon-stars-fill {
+            color: #71b5d7;
+        }
+    }
+
+    &__switch {
+        position: relative;
+        display: inline-block;
+        min-width: 3rem;
+
+        input[type="checkbox"] {
+            opacity: 0;
+            width: 0;
+            height: 0;
+
+            &:checked + .app-mode-switcher__slider {
+                background-color: #485fc7;
+            }
+
+            &:checked + .app-mode-switcher__slider:before {
+                transform: translateX(2.125rem);
+            }
+        }
+    }
+
+    &__slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0.35rem;
+        left: 0;
+        right: 0;
+        bottom: 0.35rem;
+        background-color: #d1cfcf;
+        transition: vars.$transition-duration vars.$transition-function background-color;
+        border-radius: 2rem;
+
+        &:before {
+            position: absolute;
+            content: "";
+            height: 0.35rem;
+            width: 0.35rem;
+
+            left: 4px;
+            bottom: 3.5px;
+
+            background-color: #fff;
+            transition: vars.$transition-duration vars.$transition-function;
+            border-radius: 50%;
+        }
+    }
+}

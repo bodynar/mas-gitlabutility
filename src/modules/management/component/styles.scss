@@ -31,4 +31,36 @@
             }
         }
     }
+
+    .projects-view-mode {
+        .bbr-dropdown__label {
+            border-radius: 2px;
+            font-size: 0.75rem;
+            padding-top: calc(0.5em - 1px);
+            padding-bottom: calc(0.5em - 1px);
+
+            .bbr-icon {
+                font-size: 0.85rem;
+            }
+        }
+
+        .dropdown-menu {
+            min-width: 7.25rem;
+
+            .dropdown-content {
+                font-size: 0.85rem;
+
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+
+                .bbr-dropdown-item {
+                    padding: 0.175rem 0.75rem;
+                }
+            }
+        }
+
+        &.is-active .bbr-dropdown__label .bbr-icon.bi-arrow-down::before {
+            transform: rotate(180deg) translateY(3px);
+        }
+    }
 }

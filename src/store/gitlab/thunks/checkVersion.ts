@@ -1,9 +1,12 @@
 import { Action, ThunkAction, ThunkDispatch } from "@reduxjs/toolkit";
 
+import { isNullOrEmpty } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { name, version, author } from "package.json";
 
+import { getLocalizedText } from "@app/locale";
+import { logError } from "@app/core/log";
 import { getVersion } from "@app/core/gitlab/version";
 import { MAX_GITLAB_VERSION } from "@app/shared/settings";
 
@@ -15,6 +18,7 @@ import { ApplicationStatus, setAppStatus, transitIntoLoadingState } from "@app/s
 /**
  * Check gitlab site version and compare with supported by app
  * @param skipAccessibleCheck Skip accessible check
+ * @param displayLoadingState Transit app to loading state
  */
 export const checkVersion = (
     skipAccessibleCheck = false,
@@ -23,7 +27,7 @@ export const checkVersion = (
     dispatch: ThunkDispatch<GlobalAppState, unknown, Action>,
     getState: () => GlobalAppState,
 ): Promise<boolean> => {
-        const { gitlab } = getState();
+        const { gitlab, app } = getState();
 
         const accessibleCheckResult = skipAccessibleCheck ? false : gitlab.apiIsInaccessible === true;
 
@@ -31,7 +35,27 @@ export const checkVersion = (
             return;
         }
 
-        const warnFn = getDisplayWarnFn(dispatch);
+        if (isNullOrEmpty(app.settings.gitlabAuthToken)) {
+            const errorFn = getDisplayErrorFn(dispatch);
+
+            errorFn(
+                getLocalizedText("store.gitlab.tokenIsNotSet")
+            );
+
+            return false;
+        }
+
+        try {
+            decodeURIComponent(escape(app.settings.gitlabAuthToken));
+        } catch (error) {
+            const errorFn = getDisplayErrorFn(dispatch);
+
+            errorFn(
+                getLocalizedText("store.gitlab.tokenContainsInvalidCharacters")
+            );
+
+            return false;
+        }
 
         try {
             if (displayLoadingState) {
@@ -48,21 +72,28 @@ export const checkVersion = (
             const shouldShowWarning = getShouldShowWarning(gitlabVersion);
 
             if (shouldShowWarning) {
-                const appNameCapitalized = name.charAt(0).toUpperCase() + name.slice(1);
+                const appNameCapitalized = name.capitalize();
+
+                const message = getLocalizedText("store.gitlab.gitlabVersionNoteTemplate").format(
+                    gitlabVersion,
+                    appNameCapitalized,
+                    MAX_GITLAB_VERSION
+                );
+
+                const warnFn = getDisplayWarnFn(dispatch);
 
                 warnFn(
-                    `Gitlab site runs on v${gitlabVersion}.
-                But ${appNameCapitalized} app supports v${MAX_GITLAB_VERSION} and earlier.
-                Some functions may be unstable.
-                Please, contact the app owner for updates`,
+                    message,
                     true,
                     false,
                     {
-                        caption: "Send email",
+                        caption: getLocalizedText("store.gitlab.versionWarning.sendEmail"),
                         ref: `mailto:${author.email}`
-                            + "?subject=" + encodeURI(`[${name}] App update request`)
-                            + "&body=" + encodeURI(`&body=My app is v${version} [support site v${MAX_GITLAB_VERSION}],
-gitlab site is ${gitlabVersion}`
+                            + "?subject=" + encodeURI(
+                                getLocalizedText("store.gitlab.versionWarning.subjectTemplate").format(name)
+                            )
+                            + "&body=" + encodeURI(
+                                getLocalizedText("store.gitlab.versionWarning.bodyTemplate").format(version, MAX_GITLAB_VERSION, gitlabVersion)
                             )
                     }
                 );
@@ -73,14 +104,32 @@ gitlab site is ${gitlabVersion}`
             dispatch(saveApiInInaccessible(true));
             dispatch(setAppStatus(ApplicationStatus.idle));
 
-            if (error instanceof HttpError) {
-                const errorFn = getDisplayErrorFn(dispatch);
+            const errorFn = getDisplayErrorFn(dispatch);
 
+            if (error instanceof HttpError) {
                 if (error.response.status === 401) {
-                    errorFn("Gitlab auth token is incorrect");
+                    errorFn(
+                        getLocalizedText("store.gitlab.tokenIsIncorrect")
+                    );
                 } else if (error.message === "TypeError: Failed to fetch") {
-                    errorFn("Gitlab is inaccessible");
+                    errorFn(
+                        getLocalizedText("store.gitlab.gitlabIsInaccessible")
+                    );
                 }
+            } else {
+                logError(error, {
+                    componentStack: error.stack,
+                });
+
+                errorFn(
+                    getLocalizedText("store.gitlab.gitlabAccessCheckUnknownError"),
+                    true,
+                    false,
+                    {
+                        caption: getLocalizedText("app.error.openLogsActionTitle"),
+                        ref: "#!command_open"
+                    }
+                );
             }
 
             return false;

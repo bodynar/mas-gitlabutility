@@ -4,6 +4,7 @@ import { HttpError } from "@bodynarf/utils/api/simple";
 import { isTooManyTries, retryAsync } from "ts-retry";
 
 import { ActionResultState, CancellationToken, MergeAction, MergeActionConfig, MergeActionResult, MergeResult, NotMergeReasonEnum, NotMergedRequestInfo, ProcessStateEmitter, SafeActionResult } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { checkHasDiffs, createMergeRequest, getInfo, merge } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -38,7 +39,7 @@ export const performMergeAction: actionHandler = async (
 
         messageUpdateEventEmitter.trigger({
             state: count,
-            message: `Merging ${count++}\\${action.projects.length}`
+            message: getLocalizedText("core.gitlab.streamMerge.merge.processingStateTemplate").format(`${count++}`, `${action.projects.length}`),
         });
 
         const createResult = await tryToCreateMerge(projectId, action.parameters);
@@ -58,7 +59,7 @@ export const performMergeAction: actionHandler = async (
         if (requestInfo.hasConflicts) {
             notMergedRequests.push({
                 projectId: projectId,
-                reason: "Merge conflicts",
+                reason: getLocalizedText("core.gitlab.streamMerge.merge.mergeConflicts"),
                 reasonType: NotMergeReasonEnum.conflicts,
                 mergeRequestId: requestInfo.id,
                 link: requestInfo.link,
@@ -74,7 +75,7 @@ export const performMergeAction: actionHandler = async (
                 mergeRequestId: requestInfo.id,
                 link: requestInfo.link,
                 ref: requestInfo.ref,
-                reason: "You're don't have enough access rights to merge",
+                reason: getLocalizedText("core.gitlab.streamMerge.merge.noRights"),
                 reasonType: NotMergeReasonEnum.noAccess,
             } as NotMergedRequestInfo);
 
@@ -134,6 +135,11 @@ export const performMergeAction: actionHandler = async (
         };
     }
 
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.streamMerge.merge.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`),
+    });
+
     let status = ActionResultState.success;
 
     if (mergedRequests.length === 0) {
@@ -167,7 +173,7 @@ const safeMergeWithRetry = async (projectId: number, id: number, useRetry = true
                         ...info,
                         projectId,
                         id,
-                        reason: "Merge conflicts",
+                        reason: getLocalizedText("core.gitlab.streamMerge.merge.mergeConflicts"),
                         reasonType: NotMergeReasonEnum.conflicts,
                     });
                 }
@@ -181,7 +187,7 @@ const safeMergeWithRetry = async (projectId: number, id: number, useRetry = true
                         ...info,
                         projectId,
                         id,
-                        reason: "You're don't have enough access rights to merge",
+                        reason: getLocalizedText("core.gitlab.streamMerge.merge.noRights"),
                         reasonType: NotMergeReasonEnum.error,
                     });
                 }
@@ -204,7 +210,7 @@ const safeMergeWithRetry = async (projectId: number, id: number, useRetry = true
             return SafeActionResult.fail({
                 id,
                 projectId,
-                reason: "Cannot merge. Check merge request",
+                reason: getLocalizedText("core.gitlab.streamMerge.merge.cannotMerge"),
                 reasonType: NotMergeReasonEnum.error,
             });
         }
@@ -237,7 +243,7 @@ const tryToCreateMerge = async (projectId: number, config: MergeActionConfig): P
         if (!hasDiffs) {
             return {
                 created: false,
-                reason: "No diffs between branches were found",
+                reason: getLocalizedText("core.gitlab.streamMerge.merge.noDiffs"),
                 projectId,
                 reasonType: NotMergeReasonEnum.noDiffs,
             };
@@ -250,7 +256,7 @@ const tryToCreateMerge = async (projectId: number, config: MergeActionConfig): P
                 if (!isNullish(responseObject) && responseObject.message === "404 Ref Not Found") {
                     return {
                         created: false,
-                        reason: "Project doesn't have one of merging branches",
+                        reason: getLocalizedText("core.gitlab.streamMerge.merge.noBranch"),
                         reasonType: NotMergeReasonEnum.noBranches,
                         projectId,
                     };

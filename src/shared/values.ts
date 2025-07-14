@@ -1,7 +1,8 @@
 import { isNullish, Optional } from "@bodynarf/utils";
 import { SelectableItem } from "@bodynarf/react.components";
 
-import { DEFAULT_BRANCHES, Session } from "@app/models";
+import { DEFAULT_BRANCHES, ProjectViewMode, Session } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 /** Default branches as selectable list */
 export const branchesSelectList: Array<SelectableItem> =
@@ -11,6 +12,31 @@ export const branchesSelectList: Array<SelectableItem> =
             id: branchName,
             value: branchName,
         }));
+
+/**
+ * View mode of selectable projects component baseline
+ * (must be called to calculate textual values)
+ */
+export const projectsViewMode = [
+    {
+        id: "0",
+        displayValue: () => getLocalizedText("shared.projectsViewMode.all"),
+        value: ProjectViewMode.All,
+        title: () => getLocalizedText("shared.projectsViewMode.allTitle"),
+    },
+    {
+        id: "1",
+        displayValue: () => getLocalizedText("shared.projectsViewMode.selected"),
+        value: ProjectViewMode.OnlySelected,
+        title: () => getLocalizedText("shared.projectsViewMode.selectedTitle"),
+    },
+    {
+        id: "2",
+        displayValue: () => getLocalizedText("shared.projectsViewMode.unselected"),
+        value: ProjectViewMode.OnlyDeselected,
+        title: () => getLocalizedText("shared.projectsViewMode.unselectedTitle"),
+    },
+];
 
 /**
  * @constant
@@ -28,4 +54,4 @@ export const setSession = (session: Session): void => {
     }
 
     appSession = session;
-}
+};

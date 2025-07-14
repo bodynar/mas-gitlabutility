@@ -4,6 +4,7 @@ import { isNullOrUndefined } from "@bodynarf/utils";
 import Anchor from "@bodynarf/react.components/components/anchor";
 
 import { Project } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 /** Props of @see AnchorToProject */
 type AnchorToProjectProps = {
@@ -24,7 +25,7 @@ const AnchorToProject: FC<AnchorToProjectProps> = ({
     if (isNullOrUndefined(project)) {
         return (
             <span className="has-text-danger">
-                (PROJECT &quot;{projectId}&quot; NOT FOUND)
+                {getLocalizedText("results.projectNotFoundTemplate").format(`${projectId}`)}
             </span>
         );
     }

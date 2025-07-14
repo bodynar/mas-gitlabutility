@@ -5,13 +5,16 @@ export interface MoveTagActionConfig {
     /** Tag name */
     name: string;
 
+    /** Branch name */
+    branch: string;
+
     /** Create tag if tag does not exist */
     createIfNotExist: boolean;
 }
 
 /**
  * Move release tag action
- * @description Action used to describe configuration for performing moving tag further on master branch
+ * @description Action used to describe configuration for performing moving tag further on branch
  */
 export class MoveTagAction extends ParametrizedAction<MoveTagActionConfig> {
     /**
@@ -31,6 +34,9 @@ export class MoveTagAction extends ParametrizedAction<MoveTagActionConfig> {
 export interface MoveTagParameters {
     /** Tag name */
     name: string;
+
+    /** Branch name */
+    branch: string;
 
     /** Create tag if tag does not exist */
     createIfNotExist: boolean;

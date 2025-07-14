@@ -4,8 +4,10 @@ import moment from "moment";
 
 import { isNullish, isNullOrUndefined } from "@bodynarf/utils";
 
-import { appSession } from "@app/shared/values";
-import { GitlabState, addOperationResult, clearSelection, deselectGroup, deselectProject, markThatVersionWarningWasShown, saveApiInInaccessible, selectAll, selectGroup, selectProject, setGroups, setSearchQuery } from ".";
+import { appSession, projectsViewMode } from "@app/shared/values";
+import { Group, Project, ProjectViewMode } from "@app/models";
+
+import { GitlabState, addOperationResult, changeProjectsViewMode, clearSelection, deselectGroup, deselectProject, markThatVersionWarningWasShown, saveApiInInaccessible, selectAll, selectGroup, selectProject, setGroups, setSearchQuery } from ".";
 import { initHistory, removeHistory } from "../app";
 
 const defaultState: GitlabState = {
@@ -15,6 +17,7 @@ const defaultState: GitlabState = {
     searchValue: "",
     projects: [],
     versionWarningShown: false,
+    currentProjectViewMode: projectsViewMode[0].value as ProjectViewMode,
 };
 
 /** Gitlab integration state reducer */
@@ -45,6 +48,14 @@ export const reducer = createReducer(defaultState,
                         .concat(payload)
                         .filter((x, i, a) => a.indexOf(x) === i)
                     ;
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(selectGroup, (state, { payload }) => {
                 const group = state.groups.find(({ id }) => id === payload);
@@ -58,16 +69,48 @@ export const reducer = createReducer(defaultState,
                         group.projects.map(({ id }) => id)
                     )
                         .filter((x, i, a) => a.indexOf(x) === i);
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(selectAll, state => {
                 state.selectedProjects =
-                    state.groups.flatMap(({ projects }) => projects.map(({ id }) => id));
+                    state.projects.map(({ id }) => id);
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(clearSelection, state => {
                 state.selectedProjects = [];
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(deselectProject, (state, { payload }) => {
                 state.selectedProjects = state.selectedProjects.filter(x => x !== payload);
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(deselectGroup, (state, { payload }) => {
                 const group = state.groups.find(({ id }) => id === payload);
@@ -79,17 +122,25 @@ export const reducer = createReducer(defaultState,
                 const projectIds = group.projects.map(({ id }) => id);
 
                 state.selectedProjects = state.selectedProjects.filter(x => !projectIds.includes(x));
+
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(setSearchQuery, (state, { payload }) => {
                 state.searchValue = payload;
 
-                const loweredSearch = payload.toLowerCase();
-
-                state.groups = state.groups.map(x => ({
-                    ...x,
-                    projects: state.projects
-                        .filter(({ groupId, fullName }) => groupId === x.id && fullName.toLowerCase().includes(loweredSearch))
-                }));
+                state.groups = filterProjectsByViewMode(
+                    state.currentProjectViewMode,
+                    payload,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
             })
             .addCase(markThatVersionWarningWasShown, (state) => {
                 state.versionWarningShown = true;
@@ -116,6 +167,56 @@ export const reducer = createReducer(defaultState,
             .addCase(removeHistory, (state) => {
                 state.operationsResults = state.operationsResults.filter(({ sessionId }) => sessionId === appSession.id);
             })
+            .addCase(changeProjectsViewMode, (state, { payload }) => {
+                if (state.currentProjectViewMode === payload) {
+                    return;
+                }
+
+                state.currentProjectViewMode = payload;
+
+                state.groups = filterProjectsByViewMode(
+                    payload,
+                    state.searchValue,
+                    state.groups,
+                    state.projects,
+                    state.selectedProjects
+                );
+            })
             ;
     }
 );
+
+const filterProjectsByViewMode = (
+    mode: ProjectViewMode,
+    searchQuery: string,
+    groups: Array<Group>,
+    projects: Array<Project>,
+    selectedProjects: Array<number>
+) => {
+    const loweredSearch = searchQuery.toLowerCase();
+
+    let predicate: (x: Project) => boolean =
+        () => true;
+
+    switch (mode) {
+        case ProjectViewMode.All:
+            break;
+        case ProjectViewMode.OnlySelected:
+            predicate = ({ id }) => selectedProjects.includes(id);
+            break;
+        case ProjectViewMode.OnlyDeselected:
+            predicate = ({ id }) => !selectedProjects.includes(id);
+            break;
+
+        default:
+            break;
+    }
+
+    return groups.map(x => ({
+        ...x,
+        projects: projects
+            .filter(({ groupId }) => groupId === x.id)
+            .filter(({ fullName }) => fullName.toLowerCase().includes(loweredSearch))
+            .filter(predicate)
+    }));
+};

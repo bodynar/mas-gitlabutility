@@ -1,4 +1,5 @@
-import { MergeActionResult, ReleaseAction, MergeAction, ReleaseActionResult, TagResult, DefaultBranch, ActionResultState, CancellationToken, ProcessStateEmitter } from "@app/models";
+import { MergeActionResult, ReleaseAction, MergeAction, ReleaseActionResult, TagResult, ActionResultState, CancellationToken, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { addTag, getBranchInfo } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -6,7 +7,7 @@ import { performMergeAction } from "./merge";
 
 /**
  * Release specified projects
- * @description Merge test into master with optional tagging action
+ * @description Merge test branch into production branch with optional tagging action
  * @param action Release action configuration
  * @param cancellationToken Token for operation cancel
  * @param messageUpdateEventEmitter Process state event emitter
@@ -22,8 +23,8 @@ export const performReleaseAction: actionHandler = async (
             new MergeAction(action.projects,
                 {
                     name: action.parameters.mergeRequestName,
-                    source: DefaultBranch.Test,
-                    target: DefaultBranch.Master,
+                    source: action.parameters.testBranch,
+                    target: action.parameters.productionBranch,
                 }
             ),
             cancellationToken,
@@ -69,13 +70,14 @@ export const performReleaseAction: actionHandler = async (
 
         messageUpdateEventEmitter.trigger({
             state: index,
-            message: `Gathering branch info ${index + 1}\\${upToDateProjectsIds.length}`,
+            message: getLocalizedText("core.gitlab.streamMerge.release.gatheringBranchInfoTemplate")
+                .format(`${index + 1}`, `${upToDateProjectsIds.length}`),
             maxState: upToDateProjectsIds.length
         });
 
         const projectId = upToDateProjectsIds[index];
 
-        const { commitSha } = await getBranchInfo(projectId, "master");
+        const { commitSha } = await getBranchInfo(projectId, action.parameters.productionBranch);
         branchInfoItems.push({ commitSha, projectId });
     }
 
@@ -92,7 +94,8 @@ export const performReleaseAction: actionHandler = async (
 
         messageUpdateEventEmitter.trigger({
             state: index,
-            message: `Creating tags ${index + 1}\\${branchInfoItems.length}`,
+            message: getLocalizedText("core.gitlab.streamMerge.release.creatingTagsTemplate")
+                .format(`${index + 1}`, `${branchInfoItems.length}`),
             maxState: branchInfoItems.length
         });
 
@@ -114,6 +117,15 @@ export const performReleaseAction: actionHandler = async (
             ...mergeResult,
             createdTags,
         };
+    }
+
+    if (branchInfoItems.length > 0) {
+        messageUpdateEventEmitter.trigger({
+            state: branchInfoItems.length,
+            message: getLocalizedText("core.gitlab.streamMerge.release.creatingTagsTemplate")
+                .format(`${branchInfoItems.length}`, `${branchInfoItems.length}`),
+            maxState: branchInfoItems.length
+        });
     }
 
     return {

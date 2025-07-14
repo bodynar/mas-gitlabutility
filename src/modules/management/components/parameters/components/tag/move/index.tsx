@@ -1,57 +1,90 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback } from "react";
 
 import { isNullOrEmpty } from "@bodynarf/utils";
+import { SelectableItem, useMount } from "@bodynarf/react.components";
 import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/component";
+import Dropdown from "@bodynarf/react.components/components/dropdown";
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { BaseParametersComponentProps, MoveTagParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
-/** MoveTag parameters configuration props*/
-type MoveTagParametersProps = BaseParametersComponentProps<MoveTagParameters>;
+import { createValidationConfig, ParametersValidationConfigProvider } from "../../..";
+
+/** Props of `MoveTagParametersConfiguration` */
+type MoveTagParametersConfigurationProps = BaseParametersComponentProps<MoveTagParameters>;
 
 /** Move release tag further on branch parameters configuration component */
-const MoveTagParametersConfiguration: FC<MoveTagParametersProps> = ({
-    parameters, setParameters,
-    setCanExecute, setError,
+const MoveTagParametersConfiguration: FC<MoveTagParametersConfigurationProps> = ({
+    branches,
+    parameters,
+    setCanExecute,
+    getValidationState, onValuesChange,
 }) => {
+    const selectedBranch = branches.find(({ value }) => parameters?.branch === value);
     const onNameChange = useCallback(
-        (value?: string) => setParameters({
-            ...parameters,
-            name: value,
-        }), [parameters, setParameters]);
-
-    const onCreateIfNotExistChange = useCallback(
-        (value: boolean) => setParameters({
-            ...parameters,
-            createIfNotExist: value ?? false,
-        }), [parameters, setParameters]
+        (value?: string) => onValuesChange([{ key: "name", value: value }]),
+        [onValuesChange]
     );
 
-    useEffect(() => {
+    const onCreateIfNotExistChange = useCallback(
+        (value: boolean) => onValuesChange([{ key: "createIfNotExist", value: value ?? false, }]),
+        [onValuesChange]
+    );
+
+    const onBranchSelected = useCallback(
+        (value?: SelectableItem) => onValuesChange([{ key: "branch", value: value.value, }]),
+        [onValuesChange]
+    );
+
+    useMount(() => {
         if (isNullOrEmpty(parameters?.name)) {
-            setCanExecute(false);
             return;
         }
 
         setCanExecute(true);
-    }, [parameters, setCanExecute, setError]);
+    });
 
     return (
-        <div>
+        <section role="parameters">
+            <Dropdown
+                hideOnOuterClick
+                items={branches}
+                value={selectedBranch}
+                onSelect={onBranchSelected}
+                placeholder={getLocalizedText("parameters.tag.branch")}
+                label={{ caption: getLocalizedText("parameters.tag.branch"), horizontal: true, }}
+            />
+
             <Text
                 onValueChange={onNameChange}
                 defaultValue={parameters?.name}
-                label={{ caption: "Tag name", horizontal: true }}
+                validationState={getValidationState("name")}
+                label={{ caption: getLocalizedText("parameters.tag.tagName"), horizontal: true, }}
             />
 
             <CheckBox
                 isFormLabel
                 onValueChange={onCreateIfNotExistChange}
                 defaultValue={parameters?.createIfNotExist ?? false}
-                label={{ caption: "Create tag if not exist", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.tag.move.createTagIfNotExist"), horizontal: true }}
             />
-        </div>
+        </section>
     );
 };
 
 export default MoveTagParametersConfiguration;
+
+/**
+ * Get current component parameters validation config provider fn
+ * @returns Validator config provider fn
+ */
+export const getValidationConfig: ParametersValidationConfigProvider<MoveTagParameters> = () => createValidationConfig([
+    [
+        "name", [
+            ({ name }) => isNullOrEmpty(name)
+                ? getLocalizedText("management.parameters.tag.nameIsEmpty")
+                : null,
+        ]
+    ],
+]);

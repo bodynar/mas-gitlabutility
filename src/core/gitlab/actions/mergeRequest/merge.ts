@@ -2,6 +2,7 @@ import { isNullOrEmpty } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { ActionResultState, CancellationToken, MergeRequestAction, MergeRequestActionError, MergeRequestActionResult, MergeRequestError, ProcessStateEmitter, RequestAmbiguityData } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { deleteBranch, getBranches, getRequests, merge } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -37,10 +38,20 @@ export const performMergeRequestAction: actionHandler = async (
 
             messageUpdateEventEmitter.trigger({
                 state: index,
-                message: `Processing ${index + 1}\\${action.projects.length}`
+                message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${index + 1}`, `${action.projects.length}`),
             });
 
             const requests = await getRequests(projectId, action.parameters.requestName);
+
+            if (requests.length === 0) {
+                errors.push({
+                    projectId,
+                    type: MergeRequestActionError.NotFound,
+                    message: getLocalizedText("core.gitlab.mergeRequest.requestNotFound")
+                });
+
+                continue;
+            }
 
             if (requests.length > 1) {
                 ambiguityItems.push({
@@ -97,11 +108,6 @@ export const performMergeRequestAction: actionHandler = async (
         }
     }
 
-    messageUpdateEventEmitter.trigger({
-        state: action.projects.length,
-        message: `Processing ${action.projects.length}\\${action.projects.length}`
-    });
-
     if (cancellationToken.isCancelled) {
         return {
             status: ActionResultState.cancelled,
@@ -110,6 +116,11 @@ export const performMergeRequestAction: actionHandler = async (
             errors: errors.sort((x, y) => x.type - y.type),
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`),
+    });
 
     let status = ActionResultState.success;
 

@@ -1,9 +1,10 @@
 import { SelectableProject } from "@app/models";
 
 import ProjectListEntry from "../projectItem";
+import { FC } from "react";
 
 /** Selectable project list component props */
-interface ProjectListProps {
+type ProjectListProps = {
     /** Is projects could be selected */
     canSelect: boolean;
 
@@ -17,19 +18,20 @@ interface ProjectListProps {
      * @param selected Current selection value
      */
     onSelectChange: (id: number, type: "group" | "project", selected: boolean) => void;
-}
+};
 
 /** Selectable project list component */
-const ProjectList = ({
+const ProjectList: FC<ProjectListProps> = ({
     projects,
     canSelect, onSelectChange,
-}: ProjectListProps): JSX.Element => {
+}) => {
     return (
         <ul>
             {projects.map(x =>
                 <ProjectListEntry
-                    item={x}
                     key={`${x.id}-${x.selected}`}
+
+                    item={x}
                     canSelect={canSelect}
                     onSelectChange={onSelectChange}
                 />

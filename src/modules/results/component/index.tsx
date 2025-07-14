@@ -1,24 +1,27 @@
-import { FC, useCallback, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 
-import { isNullOrUndefined } from "@bodynarf/utils";
+import { isNullish, isNullOrUndefined } from "@bodynarf/utils";
 import { ElementPosition, usePagination } from "@bodynarf/react.components";
 import Icon from "@bodynarf/react.components/components/icon/component";
 import Paginator from "@bodynarf/react.components/components/paginator";
 
-import "./style.scss";
-
-import { ActionResult, ActionResultState, OperationResult, Session, actionToDescriptionMap } from "@app/models";
+import { ActionResult, ActionResultState, OperationResult, Session } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { GlobalAppState } from "@app/store";
 import { appSession } from "@app/shared/values";
+import { getActionDescription } from "@app/core/gitlab/actions";
+
 import SessionSelector from "@app/shared/components/sessionSelector";
 
+import "./style.scss";
+
 /** Props of @see OperationsResults */
-interface OperationsResultsProps {
+type OperationsResultsProps = {
     /** Results of the operations performed */
-    results: Array<OperationResult<any>>;
-}
+    results: Array<OperationResult<ActionResult>>;
+};
 
 /** Box with performed operations results component */
 const OperationsResults: FC<OperationsResultsProps> = ({
@@ -37,32 +40,41 @@ const OperationsResults: FC<OperationsResultsProps> = ({
     );
 
     const [{ currentPage, pagesCount, onPageChange }, paginate] = usePagination(items.length, 10);
-    const pageItems: Array<OperationResult<any>> = useMemo(
+    const pageItems: Array<OperationResult<ActionResult>> = useMemo(
         () => paginate(items),
         [paginate, items]
     );
+
+    const location = useLocation();
+
+    useEffect(() => {
+        if (!isNullish(location.state) && !isNullish(location.state.sessionItem)) {
+            setItems(
+                results.filter(({ sessionId }) => sessionId === location.state.sessionItem.id)
+            );
+        }
+    }, [location.state, results]);
 
     return (
         <section>
             <div className="block">
                 <SessionSelector
                     mode="Results"
+                    defaultValue={location.state?.sessionItem}
                     onSessionSelected={onSessionSelectionChange}
                 />
             </div>
             <div className="block columns is-align-items-center">
                 <div className="column is-2">
-                    <span className="has-text-weight-bold">Results</span>: {items.length}
+                    <span className="has-text-weight-bold">
+                        {getLocalizedText("app.menu.resultsMenuItemCaption")}
+                    </span>: {items.length}
                 </div>
             </div>
             {pageItems.length === 0
                 &&
                 <p className="has-text-grey has-text-wrapped has-text-centered">
-                    No results to display
-                    {`\n`}
-                    Try selecting other session or complete any action to see result in current session
-                    {`\n`}
-                    {`(●'◡'●)`}
+                    {getLocalizedText("results.noItemsToDisplayError")}
                 </p>
             }
             {pageItems.length > 0 &&
@@ -79,14 +91,20 @@ const OperationsResults: FC<OperationsResultsProps> = ({
                                         className="is-flex is-justify-content-space-between"
                                     >
                                         <div>
-                                            <ItemIcon status={x.result?.status} />
-                                            [{x.createdOn.format("DD.MM HH:mm:ss")}] Operation <span className="has-text-weight-bold">
+                                            <ItemIcon
+                                                status={x.result?.status}
+                                                error={x.error}
+                                            />
+                                            [{x.createdOn.format("DD.MM HH:mm:ss")}] {getLocalizedText("results.operation")} <span className="has-text-weight-bold">
                                                 #{x.shortId}
                                             </span>
-                                            : {actionToDescriptionMap.get(x.action)}
+                                            : {getActionDescription(x.action)}
                                         </div>
                                         <span role="navigation">
-                                            <Icon name="arrow-right" />
+                                            <Icon
+                                                name="arrow-right"
+                                                title={getLocalizedText("results.openDetails")}
+                                            />
                                         </span>
                                     </Link>
                                 </li>
@@ -100,6 +118,14 @@ const OperationsResults: FC<OperationsResultsProps> = ({
                         currentPage={currentPage}
                         onPageChange={onPageChange}
                         position={ElementPosition.Right}
+
+                        resources={{
+                            nextPageCaption: getLocalizedText("shared.paginator.nextPageCaption"),
+                            nextPageTitle: getLocalizedText("shared.paginator.nextPageTitle"),
+                            openConcretePageTitleTemplate: getLocalizedText("shared.paginator.openConcretePageTitleTemplate"),
+                            previousPageCaption: getLocalizedText("shared.paginator.previousPageCaption"),
+                            previousPageTitle: getLocalizedText("shared.paginator.previousPageTitle")
+                        }}
                     />
                 </>
             }
@@ -115,7 +141,9 @@ export default connect(
 )(OperationsResults);
 
 /** Props type of `ItemIcon` */
-type ItemIconProps = Pick<OperationResult<any>, "error"> & Partial<Pick<ActionResult, "status">>;
+type ItemIconProps =
+    Pick<OperationResult<ActionResult>, "error">
+    & Partial<Pick<ActionResult, "status">>;
 
 /** Result list item icon */
 const ItemIcon: FC<ItemIconProps> = ({
@@ -125,7 +153,7 @@ const ItemIcon: FC<ItemIconProps> = ({
         return <Icon
             name="exclamation-circle"
             className="mr-2 has-text-danger"
-            title="Error aborted the execution"
+            title={getLocalizedText("results.resultTitleError")}
         />;
     }
 
@@ -134,24 +162,25 @@ const ItemIcon: FC<ItemIconProps> = ({
             return <Icon
                 name="exclamation-circle"
                 className="mr-2 has-text-danger"
-                title="Error have aborted execution"
+                title={getLocalizedText("results.resultTitleError")}
             />;
         case ActionResultState.cancelled:
             return <Icon
                 name="x-circle"
                 className="mr-2 has-text-danger"
-                title="You have aborted the execution"
+                title={getLocalizedText("results.youHaveAbortedExecution")}
             />;
         case ActionResultState.success:
             return <Icon
                 name="check2"
                 className="mr-2 has-text-success"
-                title="Execution completed without any errors"
+                title={getLocalizedText("results.resultTitleSuccess")}
             />;
         case ActionResultState.warn:
             return <Icon
                 name="exclamation-triangle"
-                className="Execution completed, but with some errors"
+                className="mr-2 has-text-warn--md"
+                title={getLocalizedText("results.resultTitleWarn")}
             />;
     }
 };

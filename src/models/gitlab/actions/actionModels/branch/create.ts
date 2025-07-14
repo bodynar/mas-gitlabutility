@@ -1,16 +1,19 @@
-import { Actions, ParametrizedAction } from "@app/models";
+import { Actions, StateBasedParameters, StateBasedParametrizedAction } from "@app/models";
 
 /** Create branch action parameters */
-export type CreateBranchActionConfig = {
+export type CreateBranchActionConfig = StateBasedParameters & {
     /** Source branch name */
     source: string;
 
     /** Name of new branch */
     branchName: string;
+
+    /** Save branch as additional branch */
+    saveAsAdditionalBranch: boolean;
 };
 
 /** Create branch action */
-export class CreateBranchAction extends ParametrizedAction<CreateBranchActionConfig> {
+export class CreateBranchAction extends StateBasedParametrizedAction<CreateBranchActionConfig> {
     /**
      * Creating an instance of `CreateBranchAction`
      * @param projects Project identifier numbers

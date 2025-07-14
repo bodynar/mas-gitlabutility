@@ -1,3 +1,22 @@
-#switchBranchesContainer button i {
-    transform: rotate(90deg);
+[role="parameters"] {
+    #switchBranchesContainer button i {
+        transform: rotate(90deg);
+    }
+
+    input.is-success {
+        border-color: hsl(0, 0%, 86%);
+
+        &:focus {
+            border-color: hsl(229, 53%, 53%);
+            box-shadow: 0 0 0 0.125em rgba(72, 95, 199, 0.25);
+        }
+    }
+
+    label.label.is-required-visible {
+        &::after {
+            content: "*";
+            margin-left: 0.125rem;
+            color: red;
+        }
+    }
 }

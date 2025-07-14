@@ -7,6 +7,7 @@ import CheckBox from "@bodynarf/react.components/components/primitives/checkbox/
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { MoveTagActionResult, MoveTagParameters, MovedTagInfo, NotMovedTagInfo, Project } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 import CopyToClipboardButton from "../../shared/copyToClipboardBtn";
@@ -21,29 +22,37 @@ const MoveTagResultDisplay: FC<MoveTagResultDisplayProps> = ({
 }) => {
     const onCopyNotMovedClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Not moved tags "${parameters.name}":\n\n${result.notMovedTags
+            getLocalizedText("results.tag.move.notMovedTags")
+            + ` "${parameters.name}":\n\n`
+            + result.notMovedTags
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
 
-                    return `- ${projectLink}: Tag was not moved: "${x.reason}"`;
+                    return getLocalizedText("results.tag.move.copyNotMovedTagsItemTemplate").format(projectLink, x.reason);
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.name, result.notMovedTags]);
 
     const onCopyMovedClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Moved tags "${parameters.name}":\n\n${result.notMovedTags
+            getLocalizedText("results.tag.move.movedTags")
+            + ` "${parameters.name}":\n\n`
+            + result.movedTags
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
 
-                    return `- ${projectLink}: Tag was moved to latest commit on master branch "[${x.sha}|${x.link}]"`;
+                    return getLocalizedText("results.tag.move.copyMovedTagsItemTemplate")
+                        .format(
+                            projectLink,
+                            parameters.branch,
+                            x.sha,
+                            x.link
+                        );
                 })
                 .join("\n")
-            }`
         );
-    }, [getProjectJiraRef, parameters.name, result.notMovedTags]);
+    }, [getProjectJiraRef, parameters.branch, parameters.name, result.movedTags]);
 
     const errors = useMemo(() => result.notMovedTags.groupBy<NotMovedTagInfo>("reasonType"), [result.notMovedTags]);
 
@@ -52,88 +61,89 @@ const MoveTagResultDisplay: FC<MoveTagResultDisplayProps> = ({
             <Text
                 disabled
                 onValueChange={emptyFn}
+                defaultValue={parameters.branch}
+                label={{ caption: getLocalizedText("parameters.tag.branch"), horizontal: true }}
+            />
+            <Text
+                disabled
+                onValueChange={emptyFn}
                 defaultValue={parameters.name}
-                label={{ caption: "Tag name", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.tag.tagName"), horizontal: true }}
             />
             <CheckBox
                 disabled
                 isFormLabel
                 onValueChange={emptyFn}
                 defaultValue={parameters.createIfNotExist}
-                label={{ caption: "Create tag if not exist", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.tag.move.createTagIfNotExist"), horizontal: true }}
             />
             <hr />
             <Accordion
                 defaultExpanded={result.notMovedTags.length > 0}
-                caption={`Not moved tags (${result.notMovedTags.length})`}
+                caption={`${getLocalizedText("results.tag.move.notMovedTags")} (${result.notMovedTags.length})`}
             >
                 {result.notMovedTags.length === 0 &&
                     <p className="is-italic has-text-grey pb-2">
-                        All tag&apos;s were moved! Hooray! 🎉
+                        {getLocalizedText("results.tag.move.notMovedTagsEmpty")}
                     </p>
                 }
                 {result.notMovedTags.length > 0 &&
                     <>
-                        <div className="top-right-btn-wrapper">
-                            <div>
-                                <CopyToClipboardButton
-                                    onClick={onCopyNotMovedClick}
-                                    title="Copy to clipboard for JIRA"
-                                />
-                            </div>
-                        </div>
-                        <p className="is-italic has-text-grey pb-2">
-                            These tags have not been moved. Please check each tag manually
-                        </p>
-                        <ul>
-                            {errors.map(({ items }, index) =>
-                                <>
-                                    {items.map(x =>
-                                        <TagResultInfo
-                                            key={x.projectId}
+                        <div>
+                            <p className="is-italic has-text-grey pb-2">
+                                {getLocalizedText("results.tag.move.notMovedTagsNote")}
+                            </p>
+                            <ul>
+                                {errors.map(({ items }, index) =>
+                                    <>
+                                        {items.map(x =>
+                                            <TagResultInfo
+                                                key={x.projectId}
 
-                                            notMovedTag={x}
-                                            projectId={x.projectId}
-                                            project={projects.get(x.projectId)}
-                                        />
-                                    )}
-                                    {index !== errors.length - 1 &&
-                                        <li>
-                                            <br />
-                                        </li>
-                                    }
-                                </>
-                            )}
-                        </ul>
+                                                notMovedTag={x}
+                                                projectId={x.projectId}
+                                                project={projects.get(x.projectId)}
+                                            />
+                                        )}
+                                        {index !== errors.length - 1 &&
+                                            <li>
+                                                <br />
+                                            </li>
+                                        }
+                                    </>
+                                )}
+                            </ul>
+                        </div>
+                        <CopyToClipboardButton
+                            onClick={onCopyNotMovedClick}
+                            title={getLocalizedText("results.copyToClipboard")}
+                        />
                     </>
                 }
             </Accordion>
-            <Accordion caption={`Moved tags (${result.movedTags.length})`}>
+            <Accordion caption={`${getLocalizedText("results.tag.move.movedTags")} (${result.movedTags.length})`}>
                 {result.movedTags.length === 0 &&
                     <p className="is-italic has-text-grey pb-2">
-                        No tag&apos;s were moved! So sad! 😥
+                        {getLocalizedText("results.tag.move.movedTagsEmpty")}
                     </p>
                 }
                 {result.movedTags.length > 0 &&
                     <>
-                        <div className="top-right-btn-wrapper">
-                            <div>
-                                <CopyToClipboardButton
-                                    onClick={onCopyMovedClick}
-                                    title="Copy to clipboard for JIRA"
-                                />
-                            </div>
-                        </div>
                         <ul>
                             {result.movedTags.map(x =>
                                 <TagResultInfo
                                     key={x.sha}
                                     movedTag={x}
                                     projectId={x.projectId}
+                                    branchName={parameters.branch}
                                     project={projects.get(x.projectId)}
                                 />
                             )}
                         </ul>
+                        <CopyToClipboardButton
+                            onClick={onCopyMovedClick}
+                            title={getLocalizedText("results.copyToClipboard")}
+                        />
                     </>
                 }
 
@@ -145,6 +155,7 @@ const MoveTagResultDisplay: FC<MoveTagResultDisplayProps> = ({
 
 export default MoveTagResultDisplay;
 
+/** Props type of `TagResultInfo` */
 type TagResultInfoProps = {
     /** Related project entity */
     project: Project;
@@ -157,6 +168,9 @@ type TagResultInfoProps = {
 
     /** Not moved tag information */
     notMovedTag?: NotMovedTagInfo;
+
+    /** Branch name */
+    branchName?: string;
 };
 
 /**
@@ -165,7 +179,7 @@ type TagResultInfoProps = {
  * @returns Component as template
  */
 const TagResultInfo: FC<TagResultInfoProps> = ({
-    project, projectId, movedTag, notMovedTag,
+    project, projectId, movedTag, notMovedTag, branchName
 }) => {
     if (isNullOrUndefined(movedTag) && isNullOrUndefined(notMovedTag)) {
         return <></>;
@@ -178,7 +192,7 @@ const TagResultInfo: FC<TagResultInfoProps> = ({
                     <AnchorToProject
                         project={project}
                         projectId={projectId}
-                    />: Tag was not moved: <span className="has-text-danger">
+                    />: {getLocalizedText("results.tag.move.tagWasNotMoved")}: <span className="has-text-danger">
                         {notMovedTag.reason}
                     </span>
                 </span>
@@ -192,7 +206,7 @@ const TagResultInfo: FC<TagResultInfoProps> = ({
                 <AnchorToProject
                     project={project}
                     projectId={projectId}
-                />: Tag was moved to latest commit on master branch &quot;<Anchor
+                />: {getLocalizedText("results.tag.move.tagWasMovedToLatestCommitTemplate").format(branchName)} &quot;<Anchor
                     target="_blank"
                     href={movedTag.link}
                     className="is-underlined"

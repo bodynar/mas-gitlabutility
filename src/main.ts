@@ -7,9 +7,9 @@ import path from "path";
 import Store from "electron-store";
 import log from "electron-log/main";
 
-import { ErrorInfo } from "react";
 import moment from "moment";
 
+import { subscribeIPC } from "./node/ipc";
 import { ipcMessages } from "./shared/ipcMessages";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -101,46 +101,28 @@ app.on("activate", () => {
 const store = new Store();
 const today = moment();
 
-log.transports.file.resolvePathFn = ({ appData, appName }) => path.join(appData, appName, `logs/${today.format("YYYY-MM-DD")}-error.log`);
+/** Log file name template */
+export const logFileTemplate = (date: string) => `${date}.log`;
+
+log.transports.file.level = "error";
+log.transports.file.resolvePathFn = (
+    { appData, appName }
+) =>
+    path.join(
+        appData,
+        appName,
+        "logs",
+        "error",
+        logFileTemplate(today.format("YYYY-MM-DD"))
+    );
+
+subscribeIPC(
+    ipcMain,
+    store
+);
 
 ipcMain
-    .on(ipcMessages.store.get, async (event, value) => {
-        event.returnValue = store.get(value);
-    })
-    .on(ipcMessages.store.set, async (_, key, value) => {
-        store.set(key, value);
-    })
-    .on(ipcMessages.store.remove, async (_, key) => {
-        store.delete(key);
-    })
-    .on(ipcMessages.store.has, async (event, key) => {
-        event.returnValue = store.has(key);
-    })
-    .on(ipcMessages.log.write, async (_, error: Error, { componentStack }: ErrorInfo) => {
-        log.error(
-            `Unhandled error "${error.message}". Stack:`,
-            componentStack
-        );
-    })
-    .on(ipcMessages.log.open, async () => {
-        shell.openPath(
-            log.transports.file.getFile().path
-        );
-    })
-    .on(ipcMessages.app.flash, () => {
-        const [window] = BrowserWindow.getAllWindows();
-
-        if (!window.isFocused()) {
-            window.once("focus", () => window.flashFrame(false));
-            window.flashFrame(true);
-        }
-    })
     .on(ipcMessages.app.preventClose, (_, value: boolean) => {
         canClose = value;
-    })
-    .on(ipcMessages.app.closeAfterSave, async () => {
-        const [window] = BrowserWindow.getAllWindows();
-
-        window.destroy();
     })
     ;

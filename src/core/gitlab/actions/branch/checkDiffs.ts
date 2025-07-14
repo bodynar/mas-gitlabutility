@@ -2,6 +2,7 @@ import { isNullish } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { ActionResultState, CheckDiffsAction, CheckDiffsActionResult, CheckDiffsActionConfig, CancellationToken, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { checkHasDiffs } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -36,7 +37,7 @@ export const performCheckDiffsAction: actionHandler = async (
 
         messageUpdateEventEmitter.trigger({
             state: count,
-            message: `Processing ${count++}\\${action.projects.length}`,
+            message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${count++}`, `${action.projects.length}`),
         });
 
         const diffResult = await checkDiffs(projectId, action.parameters);
@@ -63,6 +64,11 @@ export const performCheckDiffsAction: actionHandler = async (
             errors,
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`),
+    });
 
     let status = ActionResultState.success;
 
@@ -97,7 +103,7 @@ const checkDiffs = async (projectId: number, config: CheckDiffsActionConfig): Pr
                 const responseObject: { message: string; } = await error.response.json();
 
                 if (!isNullish(responseObject) && responseObject.message === "404 Ref Not Found") {
-                    return "Project doesn't have one of merging branches";
+                    return getLocalizedText("core.gitlab.branch.checkDiff.projectDoesNotHaveBranch");
                 }
             }
         }

@@ -1,8 +1,12 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback } from "react";
 
-import { emptyFn, isNullOrUndefined } from "@bodynarf/utils";
-import { ButtonProps } from "@bodynarf/react.components";
+import { connect } from "react-redux";
+
+import { ButtonProps, useDebounceHandler } from "@bodynarf/react.components";
 import Button from "@bodynarf/react.components/components/button";
+
+import { getLocalizedText, LocaleKeys } from "@app/locale";
+import { displayInfo } from "@app/store/notificator";
 
 import "./style.scss";
 
@@ -10,93 +14,53 @@ import "./style.scss";
 type CopyToClipboardButtonProps = Partial<ButtonProps> & {
     /**
      * Content of popup after button click
-     * @default "Copied to clipboard"
+     * default value is located in resource by key `results.copyToClipboardButton.copiedToClipboard`
     */
     popupContent?: string;
 
     /** Click action handler */
     onClick: () => void;
+
+    /**
+     * Display info message
+     * @param text Message to display locale key
+     * @param doNotHide Should message stay on screen until manual user close action
+     */
+    showInformNotification: (message: keyof LocaleKeys, important?: boolean) => void;
 };
 
 /** Button with copy icon and popup tooltip after click */
 const CopyToClipboardButton: FC<CopyToClipboardButtonProps> = (props) => {
-    const [tippyVisible, setTippyVisible] = useState(false);
-    const [tippyFadeOut, setTippyFadeOut] = useState(false);
+    const clickHandler = useCallback(async (): Promise<void> => {
+        props.onClick();
 
-    const clickHandler = useCallback(() => {
-        (props.onClick ?? emptyFn)();
+        props.showInformNotification("results.copyToClipboardButton.copiedToClipboard", false);
+    }, [props]);
 
-        setTippyVisible(true);
-    }, [props.onClick]);
-
-    const [debounce, onClick] = useDebounce(clickHandler, 5);
-
-    useEffect(() => {
-        if (tippyVisible) {
-            const timers: Array<NodeJS.Timeout> = [];
-
-            const timer = setTimeout(() => {
-                setTippyFadeOut(true);
-
-                timers.push(
-                    setTimeout(() => {
-                        setTippyFadeOut(false);
-                        setTippyVisible(false);
-                    }, 1 * 1000)
-                );
-            }, 3 * 1000);
-
-            timers.unshift(timer);
-
-            return () => timers.forEach(x => clearTimeout(x));
-        }
-
-        return undefined;
-    }, [tippyVisible]);
+    const [debounce, onClick] = useDebounceHandler(clickHandler, 5);
 
     return (
-        <>
-            {tippyVisible &&
-                <div className={`tippy ${tippyFadeOut ? "fade-out" : "fade-in"}`}>
-                    {props.popupContent ?? "Copied to clipboard"}
-                </div>
-            }
-            <Button
-                {...props}
-                type="white"
-                onClick={onClick}
-                icon={{ name: "copy" }}
-                disabled={!debounce || (props.disabled ?? false)}
-                title={!debounce ? "Button is on cooldown" : (props.title ?? "Copy to clipboard")}
-            />
-        </>
+        <div className="copy-btn-container">
+            <div className="copy-btn-wrapper">
+                <Button
+                    {...props}
+                    type="white"
+                    onClick={onClick}
+                    icon={{ name: "copy" }}
+                    disabled={!debounce || (props.disabled ?? false)}
+                    title={!debounce
+                        ? getLocalizedText("results.copyToClipboardButton.buttonIsOnCoolDown")
+                        : (props.title ?? getLocalizedText("results.copyToClipboardButton.copyToClipboard"))
+                    }
+                />
+            </div>
+        </div>
     );
 };
 
-export default CopyToClipboardButton;
-
-/**
- * Get debounced handler
- * @param handler Action to handle
- * @param debounceTime Amount of seconds to stay inactive
- * @returns Pair: current state, is in debounce state; handler with debounce
- */
-const useDebounce = (
-    handler: () => void,
-    debounceTime: number
-): [boolean, () => void] => {
-    const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout>();
-
-    const debounceHandler = useCallback(() => {
-        handler();
-
-        setDebounceTimer(
-            setTimeout(() => {
-                clearTimeout(debounceTimer);
-                setDebounceTimer(undefined);
-            }, debounceTime * 1000)
-        );
-    }, [handler, debounceTime, debounceTimer]);
-
-    return [isNullOrUndefined(debounceTimer), debounceHandler];
-};
+export default connect(
+    undefined,
+    {
+        showInformNotification: displayInfo
+    }
+)(CopyToClipboardButton);

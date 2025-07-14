@@ -5,6 +5,12 @@ export interface ReleaseActionConfig {
     /** Released version */
     version: string;
 
+    /** Source branch name */
+    testBranch: string;
+
+    /** Target branch name */
+    productionBranch: string;
+
     /** Is version tag must be set after release merge */
     setVersionTagAfter: boolean;
 
@@ -14,7 +20,7 @@ export interface ReleaseActionConfig {
 
 /**
  * Release action.
- * @description Action used to describe configuration for performing release merge (usually from to master branch)
+ * @description Action used to describe configuration for performing release merge (usually from to branch)
  */
 export class ReleaseAction extends ParametrizedAction<ReleaseActionConfig> {
     /**
@@ -42,4 +48,13 @@ export interface ReleaseParameters {
 
     /** Template for MR name */
     template: string;
+
+    /** Template for tag version */
+    tagVersionTemplate: string;
+
+    /** Source branch name */
+    testBranch: string;
+
+    /** Target branch name */
+    productionBranch: string;
 }

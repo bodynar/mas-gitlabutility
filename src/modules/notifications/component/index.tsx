@@ -8,22 +8,31 @@ import Paginator from "@bodynarf/react.components/components/paginator";
 import Icon from "@bodynarf/react.components/components/icon";
 
 import { Notification, Session } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { getClassNameForType } from "@app/core";
+import { openErrorLogFile } from "@app/core/log";
 import { GlobalAppState } from "@app/store";
+import { displayWarn } from "@app/store/notificator";
 import { appSession } from "@app/shared/values";
-import { openCurrentErrorLogFile } from "@app/core/log";
 
 import SessionSelector from "@app/shared/components/sessionSelector";
 
 /** Notification list props */
-interface NotificationsProps {
+type NotificationsProps = {
     /** All notifications */
     notifications: Array<Notification>;
-}
+
+    /**
+     * Display warn message
+     * @param message Message to display
+     */
+    displayWarning: (message: string) => void;
+};
 
 /** Notification list */
 const Notifications: FC<NotificationsProps> = ({
     notifications,
+    displayWarning,
 }) => {
     const [items, setItems] = useState(
         notifications.filter(({ sessionId }) => sessionId === appSession.id)
@@ -53,17 +62,15 @@ const Notifications: FC<NotificationsProps> = ({
             </div>
             <div className="block columns is-align-items-center">
                 <div className="column is-2">
-                    <span className="has-text-weight-bold">Notifications</span>: {items.length}
+                    <span className="has-text-weight-bold">
+                        {getLocalizedText("common.notifications")}
+                    </span>: {items.length}
                 </div>
             </div>
             {pageItems.length === 0
                 &&
                 <p className="has-text-grey has-text-wrapped has-text-centered">
-                    No notifications to display
-                    {`\n`}
-                    Try selecting other session or complete any action to see notification in current session
-                    {`\n`}
-                    {`(●'◡'●)`}
+                    {getLocalizedText("notifications.noItemsToDisplayError")}
                 </p>
             }
             {pageItems.length > 0 &&
@@ -72,6 +79,7 @@ const Notifications: FC<NotificationsProps> = ({
                         <NotificationItem
                             key={x.id}
                             item={x}
+                            displayWarning={displayWarning}
                         />
                     )}
                     <Paginator
@@ -81,6 +89,14 @@ const Notifications: FC<NotificationsProps> = ({
                         currentPage={currentPage}
                         onPageChange={onPageChange}
                         position={ElementPosition.Right}
+
+                        resources={{
+                            nextPageCaption: getLocalizedText("shared.paginator.nextPageCaption"),
+                            nextPageTitle: getLocalizedText("shared.paginator.nextPageTitle"),
+                            openConcretePageTitleTemplate: getLocalizedText("shared.paginator.openConcretePageTitleTemplate"),
+                            previousPageCaption: getLocalizedText("shared.paginator.previousPageCaption"),
+                            previousPageTitle: getLocalizedText("shared.paginator.previousPageTitle")
+                        }}
                     />
                 </div>
             }
@@ -93,19 +109,39 @@ export default connect(
     ({ notificator, app }: GlobalAppState) => ({
         notifications: notificator.notifications,
         history: app.appHistory,
-    }) as NotificationsProps,
-    {}
+    }) as Partial<NotificationsProps>,
+    {
+        displayWarning: displayWarn
+    }
 )(Notifications);
 
+/** Props for `NotificationItem` */
 type NotificationItemProps = {
+    /** Notification item data */
     item: Notification;
+
+    /**
+     * Display warn message
+     * @param message Message to display
+     */
+    displayWarning: (message: string) => void;
 };
 
+/** Component for displaying single notification */
 const NotificationItem: FC<NotificationItemProps> = ({
-    item,
+    item, displayWarning,
 }) => {
     const isErrorCommand = !isNullOrUndefined(item.link) && item.link.ref.startsWith("#!command");
-    const openErrorFile = useCallback(() => openCurrentErrorLogFile(), []);
+    const openErrorFile = useCallback(
+        () => {
+            const hasLogFile = openErrorLogFile(item.createdOn);
+
+            if (!hasLogFile) {
+                displayWarning(getLocalizedText("shared.logFileIsNotFound"));
+            }
+        },
+        [displayWarning, item.createdOn]
+    );
 
     return (
         <div
@@ -114,10 +150,12 @@ const NotificationItem: FC<NotificationItemProps> = ({
         >
             <div className="message-body has-text-wrapped">
                 <span className="is-italic">
-                    Created on {item.createdOn.format("DD.MM HH:mm:ss")}
+                    {getLocalizedText("common.createdOn")} {item.createdOn.format("DD.MM HH:mm:ss")}
                 </span>
-                {`\n`}
-                <span className="has-text-weight-bold">Message:</span>
+                <br />
+                <span className="has-text-weight-bold">
+                    {getLocalizedText("notifications.message")}:
+                </span>
                 <p>
                     {item.message}
                 </p>

@@ -3,14 +3,32 @@ import { isNullOrUndefined } from "@bodynarf/utils";
 import { get } from "@app/core";
 import { Group } from "@app/models";
 
+const ITEMS_PER_PAGE = 100;
+
 /**
  * Get all visible groups data
  * @returns Promise with all loaded groups
  */
 export const getGroups = async (): Promise<Array<Group>> => {
-    const groupDataItems = await get<Array<GetGroupResponse>>(`/groups?per_page=100`);
+    const loadedItems: Array<GetGroupResponse> = [];
 
-    return groupDataItems
+    let counter = 0;
+
+    while (counter++ < 100) {
+        const pageItems = await get<Array<GetGroupResponse>>(`/groups?per_page=${ITEMS_PER_PAGE}&page=${counter}`);
+
+        if (pageItems.length === 0) {
+            break;
+        }
+
+        loadedItems.push(...pageItems);
+
+        if (pageItems.length < ITEMS_PER_PAGE) {
+            break;
+        }
+    }
+
+    return loadedItems
         .map(x => ({
             id: x.id,
             link: x.web_url,
@@ -24,6 +42,7 @@ export const getGroups = async (): Promise<Array<Group>> => {
             childrenLoaded: false,
         }) as Group)
         .filter(x => !isNullOrUndefined(x.parentId))
+        .withoutDuplicateBy(({ id }) => id)
         .sort((l, r) => l.fullName.localeCompare(r.fullName));
 };
 

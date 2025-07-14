@@ -1,0 +1,424 @@
+{
+    "common": {
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "save": "Сохранить",
+        "name": "Название",
+        "cancel": "Отменить",
+        "loading": "Загрузка",
+        "session": "Сессия",
+        "createdOn": "Создано",
+        "back": "Назад",
+        "error": "Ошибка",
+        "errors": "Ошибки",
+        "notifications": "Уведомления",
+        "action": "Действие"
+    },
+    "core": {
+        "gitlab": {
+            "processingStateTemplate": "Обработка {0}\\{1}",
+            "branchNotFoundTemplate": "Ветка \"{0}\" не найдена",
+            "timeRange": {
+                "second": "сек.",
+                "minute": "мин.",
+                "hour": "ч."
+            },
+            "branch": {
+                "checkDiff": {
+                    "projectDoesNotHaveBranch": "В проекте отсутствует одна (или обе) сравниваемые ветки"
+                },
+                "create": {
+                    "branchNotCreatedTemplate": "Ветка \"{0}\" не создана"
+                },
+                "delete": {}
+            },
+            "mergeRequest": {
+                "requestNotFound": "MR не найден",
+                "close": {},
+                "merge": {}
+            },
+            "streamMerge": {
+                "merge": {
+                    "processingStateTemplate": "Слив веток {0}\\{1}",
+                    "mergeConflicts": "Конфликты слияния",
+                    "noRights": "У вас недостаточно прав на слив веток",
+                    "cannotMerge": "Невозможно слить. Проверьте MR",
+                    "noDiffs": "Изменения между ветками отсутствуют",
+                    "noBranch": "В проекте отсутствует одна (или обе) сливаемые ветки"
+                },
+                "release": {
+                    "gatheringBranchInfoTemplate": "Чтение данных о ветках {0}\\{1}",
+                    "creatingTagsTemplate": "Создание тегов {0}\\{1}"
+                }
+            },
+            "tag": {
+                "tagNotFound": "Тег не найден",
+                "errorDuringExecutionTemplate": "Ошибка во время выполнения, {0}",
+                "checkNonActual": {},
+                "move": {
+                    "tagIsUpToDate": "Тег на актуальной версии"
+                }
+            }
+        }
+    },
+    "app": {
+        "brand": {
+            "glitchyTitle": "Судя по всему приложение глючит.."
+        },
+        "themeSwitcher": {
+            "lightTheme": "Светлая тема",
+            "darkTheme": "Темная тема"
+        },
+        "error": {
+            "message": "Произошла ошибка.\nПожалуйста, свяжитесь с владельцем приложения и передайте логи",
+            "openLogsActionTitle": "Открыть логи"
+        },
+        "menu": {
+            "disabledItemTitle": "Элемент заблокирован из-за незаполненности настроек подключения к gitlab",
+            "mainMenuItemCaption": "Главная",
+            "mainMenuItemTitle": "Основной модуль, где выполняются все операции",
+            "settingsMenuItemCaption": "Настройки",
+            "settingsMenuItemTitle": "Страница настроек приложения (подключения, операций и пр.)",
+            "resultsMenuItemCaption": "Результаты",
+            "resultsMenuItemTitle": "Список результатов запущенных операций",
+            "sessionHistoryMenuItemCaption": "История сессий",
+            "sessionHistoryMenuItemTitle": "Информация об истории сессий (запусков приложения)",
+            "notificationsTitle": "Список уведомлений приложения"
+        },
+        "notification": {
+            "dismissAll": "Скрыть всё",
+            "dismissAllTitle": "Скрыть все уведомления",
+            "hideNotificationTitle": "Скрыть уведомление"
+        }
+    },
+    "history": {
+        "currentSession": "Текущая сессия",
+        "startedAt": "Начата в",
+        "operationResultsCount": "Результаты операций",
+        "sessionHistoryIsEmpty": "История сессий пуста\nᓚᘏᗢ",
+        "clearSessionHistory": "Очистить историю",
+        "clearEmptyRecords": "Удалить пустые",
+        "clearEmptyRecordsTitle": "Удалить записи сессий, без результатов и уведомлений"
+    },
+    "management": {
+        "loading": "ЗАГРУЗКА",
+        "execute": "Выполнить",
+        "requiredParametersNotSet": "Не все обязательные параметры заполнены корректно",
+        "extraConfirmRequired": "Требуется дополнительное подтверждение",
+        "noSelectedProject": "Проекты не выбраны",
+        "action": "Выполняемое действие",
+        "iAmSure": "Подтверждаю",
+        "parametersCaption": "Параметры",
+        "selectProjectsCaption": "Выберите проекты для выполнения указанного действия",
+        "selectedProjectsTemplate": "{0}/{1} выбрано",
+        "searchProjects": "Поиск проектов..",
+        "actionIsNotSelected": "Действие не выбрано",
+        "groupIsEmpty": "Группа не отмечена избранной или не содержит вложенных проектов",
+        "selectAllCaption": "Выбрать всё",
+        "selectAllTitle": "Все доступные проекты будут выбраны. Даже те, которые не видны из-за текущего фильтра",
+        "deselectAll": "Снять выделение",
+        "saveCurrentSelection": "Сохранить текущий выбор",
+        "noProjectsVisibleNote": "Если вы не видите вложенных проектов или не можете выбрать их, убедитесь что у вас выбраны избранные группы в настройках",
+        "expandableGroupListItemSelectedTemplate": "(Выбрано {0}/{1})",
+        "componentNotFound": "ВЫБРАННОЕ ДЕЙСТВИЕ НЕ ПОДДЕРЖИВАЕТСЯ",
+        "parameters": {
+            "sourceBranchSameAsTarget": "Ветки должны различаться",
+            "switchBranches": "Поменять ветки местами",
+            "parameterIsNotSet": "Параметр должен быть заполнен вручную",
+            "branchNameCannotBeEmpty": "Название ветки должно быть заполнено",
+            "branch": {
+                "checkDiffs": {},
+                "create": {
+                    "sourceBranchNameSameAsTarget": "Название ветки не должно дублировать исходную ветку",
+                    "branchIsAlreadyPresentedInExtraBranchListTemplate": "Ветка \"{0}\" уже является частью списка дополнительных веток"
+                },
+                "delete": {
+                    "defaultBranchCannotBeDeleted": "Нельзя удалить стандартную ветку",
+                    "branchIsNotPresentedInExtraBranchListTemplate": "Ветка \"{0}\" не является частью списка дополнительных веток"
+                }
+            },
+            "mergeRequest": {
+                "requestNameCannotBeEmpty": "Название MR должно быть заполнено",
+                "close": {},
+                "merge": {}
+            },
+            "streamMerge": {
+                "templateWouldNotBeApplied": "Как только вы внесете изменение в поле - шаблон более не будет применяться",
+                "useTemplate": "Использовать шаблон из настроек",
+                "merge": {
+                    "nameMustBeSet": "Название MR должно быть задано",
+                    "releaseNoteTemplate": "Если вы желаете выполнить релизный MR, то, пожалуйста, используйте операцию \"{0}\""
+                },
+                "release": {
+                    "versionCannotBeEmpty": "Необходимо указать версию",
+                    "versionNumberIsNotSet": "Номер версии не задан",
+                    "requestNameIsNotSet": "Необходимо указать название MR",
+                    "branchWithTestedCode": "Ветка с тест-версией",
+                    "branchWithProductiveCode": "Ветка с прод-версией"
+                }
+            },
+            "tag": {
+                "nameIsEmpty": "Название тега не задано",
+                "checkNonActual": {},
+                "move": {}
+            }
+        }
+    },
+    "notifications": {
+        "noItemsToDisplayError": "Нет уведомлений для отображения\nВыберите другую сессию или выполните операцию для того, чтобы увидеть уведомления здесь\n(●'◡'●)",
+        "message": "Сообщение"
+    },
+    "results": {
+        "noItemsToDisplayError": "Нет результатов для отображения\nВыберите другую сессию или выполните операцию для того, чтобы увидеть уведомления здесь\n(●'◡'●)",
+        "operation": "Операция",
+        "startedOn": "Запущена в",
+        "completedOn": "Завершена в",
+        "youHaveAbortedExecution": "Вы отменили выполнение операции",
+        "resultTitleError": "Ошибка прервала выполнение операции",
+        "resultTitleSuccess": "Выполнение операции завершено без ошибок",
+        "resultTitleWarn": "Выполнение операции завершено, но с некоторыми ошибками",
+        "resultIdIsEmpty": "Идентификатор результата операции не указан",
+        "resultNotFoundTemplate": "Результат операции с идентификатором \"{0}\" не найден",
+        "resultCaptionTemplate": "Результат операции #{0}",
+        "operationDidNotStarted": "Операция не была запущена из-за ошибки",
+        "projectNotFoundTemplate": "(ПРОЕКТ \"{0}\" НЕ НАЙДЕН)",
+        "componentNotFound": "ВЫБРАННЫЙ РЕЗУЛЬТАТ НЕ ПОДДЕРЖИВАЕТСЯ",
+        "copyToClipboard": "Копировать в буфер обмена для JIRA",
+        "errors": "ошибки",
+        "results": "результаты",
+        "openDetails": "Открыть детальную информацию",
+        "noErrorsCaption": "Ошибки отсутствуют! 🎉",
+        "branch": {
+            "checkDiffs": {
+                "caption": "Проверка наличия изменений",
+                "hasDiffs": "Изменения есть",
+                "noDiffs": "Изменений нет",
+                "successCaption": "Результаты проверки наличия изменений",
+                "noSuccessCaption": "Операция проверки наличия изменений не была выполнена успешно, к сожалению 😥"
+            },
+            "create": {
+                "captionTemplate": "Создание новой ветки с названием \"{0}\" на основе \"{1}\"",
+                "successCaption": "Созданные ветки",
+                "noSuccessCaption": "Ветки не были созданы! 😥",
+                "branchCreatedMessage": "Ветка создана"
+            },
+            "delete": {
+                "successCaption": "Удаленные ветки",
+                "noSuccessCaption": "Ветки не были удалены! 😥",
+                "branchDeletedMessage": "Ветка удалена",
+                "ambiguityCaption": "Неоднозначные результаты поиска веток",
+                "noAmbiguityCaption": "Неоднозначности нет 🎉",
+                "ambiguityItemTemplate": "Веток с частью названия \"{0}\": {1}"
+            }
+        },
+        "mergeRequest": {
+            "ambiguityCaption": "Неоднозначные результаты поиска MR",
+            "noAmbiguityMessage": "Неоднозначности нет 🎉",
+            "ambiguityItemTemplate": "Существует {0} MR с таким названием в рамках проекта",
+            "mergedRequests": "Слитые MR",
+            "noMergedRequests": "Нет слитых MR! 😥",
+            "close": {
+                "successCaption": "Закрытые MR",
+                "noSuccessMessage": "Нет закрытых MR! 😥",
+                "requestClosed": "MR закрыт"
+            },
+            "merge": {
+                "requestMerged": "MR слит"
+            },
+            "list": {
+                "copySuccessCaptionItemTemplate": "- {0}: MR \"{1}\" слит в [{2}|{3}]",
+                "copyNotSuccessCaptionItemTemplate": "{0}: MR [{1}|{2}] не слит: \"{3}\"",
+                "copyNotCreatedMergeRequestItemTemplate": "{0}: MR не был создан: \"{1}\"",
+                "notSuccessCaption": "Не слитые MR",
+                "notSuccessEmpty": "Нет не слитых MR! 🎉",
+                "notSuccessError": "Данные MR не были слиты из-за ошибок. Пожалуйста, слейте вручную",
+                "mergeRequest": "MR",
+                "notMerged": "не слит",
+                "mergeRequestNotCreated": "MR не создан",
+                "mergeRequestMergedTemplate": "MR {0} слит в"
+            }
+        },
+        "copyToClipboardButton": {
+            "copiedToClipboard": "Скопировано в буфер обмена",
+            "buttonIsOnCoolDown": "Кнопка охлаждается",
+            "copyToClipboard": "Копировать в буфер обмена"
+        },
+        "streamMerge": {
+            "merge": {},
+            "release": {
+                "createdTags": "Созданные теги",
+                "createdTagItemTemplate": "- {0}: Тег \"[{1}|{2}]\"{3}",
+                "noCreatedTags": "Теги не были созданы 😥",
+                "tag": "Тег",
+                "withoutMr": "Без создания MR"
+            }
+        },
+        "tag": {
+            "checkNonActual": {
+                "copyNonActualTagItemTemplate": "- {0}: [Тег|{1}] не на [последнем коммите|{2}]",
+                "copyActualTagItemTemplate": "- {0}: Тег на последнем коммите",
+                "copyErrorsCaption": "Ошибки во время поиска актуальности тегов",
+                "copyErrorItemTemplate": "- {0}: {1}",
+                "nonActualTagsCaption": "Неактуальные теги",
+                "nonActualTagsEmpty": "Неактуальные теги не найдены",
+                "actualTagsCaption": "Актуальные теги",
+                "actualTagsEmpty": "Актуальные теги не найдены 😥",
+                "tagIsOnLatestCommit": "Тег на последнем коммите",
+                "isNotOn": "не на"
+            },
+            "move": {
+                "copyNotMovedTagsItemTemplate": "- {0}: Тег не был передвинут: \"{1}\"",
+                "copyMovedTagsItemTemplate": "- {0}: Тег был передвинут на последний коммит на ветке {1} \"[{2}|{3}]\"",
+                "notMovedTags": "Теги, которые не были передвинуты",
+                "notMovedTagsEmpty": "Все теги были передвинуты 🎉",
+                "notMovedTagsNote": "Следующие теги не были передвинуты. Пожалуйста, проверьте каждый тег вручную",
+                "movedTags": "Передвинутые теги",
+                "movedTagsEmpty": "Нет тегов, которые были передвинуты 😥",
+                "tagWasNotMoved": "Тег не был передвинут",
+                "tagWasMovedToLatestCommitTemplate": "Тег был передвинут на последний коммит на ветке {0}"
+            }
+        }
+    },
+    "settings": {
+        "viewMode": {
+            "toEdit": "В режим редактирования",
+            "toView": "В режим просмотра"
+        },
+        "noChanges": "Нет изменений",
+        "applicationSettings": {
+            "caption": "Настройки приложения",
+            "apiUrlPlaceholder": "Адрес сайта, на котором установлен gitlab",
+            "apiUrlLabel": "Адрес gitlab",
+            "gitlabTokenLabel": "Токен авторизации gitlab",
+            "gitlabTokenPlaceholder": "Личный токен авторизации",
+            "taskbarLoadingStateLabel": "Отображение прогресса в таскбаре",
+            "taskbarLoadingStateTitle": "Отображать статус прогресса в панели задач"
+        },
+        "templates": {
+            "caption": "Настройки операций (шаблоны)",
+            "tagLabel": "Префикс тега",
+            "tagPlaceholder": "Шаблон тега для релиза",
+            "tagHintTemplate": "Например: {0}{1}.1.0",
+            "simpleExample": "Например: {0}",
+            "streamMergeRequestLabel": "Название обычного MR",
+            "streamMergeRequestPlaceholder": "Шаблон названия для обычного MR",
+            "releaseMergeRequestLabel": "Название MR релиза",
+            "releaseMergeRequestPlaceholder": "Шаблон для названия релизного MR",
+            "resetToDefaultButton": "Восстановить изначальные значения"
+        },
+        "favoriteGroups": {
+            "caption": "Избранные группы",
+            "noTokenSetError": "Пожалуйста, задайте настройки подключения к Gitlab сначала",
+            "blockHint": "Выберите группы для предзагрузки.\nВыбранные группы будут загружены (включая вложенные проекты) во время старта приложения",
+            "searchCaption": "Поиск по названию",
+            "noItemsFoundBySearch": "Группы с данным названием не найдены\n\n\\_(ツ)_/¯"
+        },
+        "additionalBranches": {
+            "caption": "Дополнительные ветки",
+            "blockHint": "Вы можете задать дополнительные ветки для использования в операциях\nСохранены будут только уникальные значения",
+            "noteCaption": "ВНИМАНИЕ",
+            "blockNote": "Название ветки чувствительно к регистру",
+            "createNew": "Добавить новую",
+            "deleteAll": "Удалить все"
+        }
+    },
+    "store": {
+        "app": {
+            "mergeRequestNameTemplate": "[Автоматически] Слив из \"{0}\" в \"{1}\"",
+            "releaseMergeRequestNameTemplate": "[Автоматически] Релизный слив \"{0}\"",
+            "appHistoryDeleting": "Удаление истории сессий",
+            "appHistoryDeleted": "История сессий успешно удалена",
+            "emptyHistoryRecordsDeleted": "Пустые записи сессий удалены"
+        },
+        "gitlab": {
+            "noProjectsSelected": "Проекты не выбраны",
+            "actionIsNotImplemented": "Действие \"{0}\" пока что не реализовано",
+            "performingOperation": "Выполнение операции \"{0}\"",
+            "cancelOperation": "Отменить операцию",
+            "operationFailed": "Операция прервана из-за ошибки. Подробная информация отображена на странице результатов",
+            "operationCancelled": "Операция отменена. Подробная информация отображена на странице результатов",
+            "operationCompleted": "Операция завершена. Подробная информация отображена на странице результатов",
+            "gitlabIsInaccessible": "Gitlab недоступен",
+            "errorDuringDataLoad": "Ошибка во время загрузки данных",
+            "gitlabVersionNoteTemplate": "Используемый Gitlab работает на версии v{0}.\nНо приложение {1} поддерживает версию v{2} и ранние.\nНекоторые функции могут работать нестабильно.\nПожалуйста, запросите обновление у владельца приложения",
+            "tokenIsIncorrect": "Токен доступа Gitlab некорректен",
+            "tokenIsNotSet": "Токен доступа Gitlab не задан",
+            "tokenContainsInvalidCharacters": "Токен доступа Gitlab содержит недопустимые символы",
+            "gitlabAccessCheckUnknownError": "Во время проверки доступности Gitlab возникла непредвиденная ошибка",
+            "versionWarning": {
+                "sendEmail": "Отправить email",
+                "subjectTemplate": "[{0}] Запрос на обновление приложения",
+                "bodyTemplate": "Приложение версии v{0} [поддерживаемая версия Gitlab {1}],\nВерсия сайта Gitlab {2}"
+            }
+        }
+    },
+    "shared": {
+        "projectsViewMode": {
+            "all": "Все",
+            "allTitle": "Отобразить все проекты",
+            "selected": "Только выбранные",
+            "selectedTitle": "Отобразить только выбранные проекты",
+            "unselected": "Только не выбранные",
+            "unselectedTitle": "Отобразить только проекты, которые не выбраны"
+        },
+        "sessionSelector": {
+            "current": "Текущая"
+        },
+        "actionDescriptions": {
+            "merge": "Слив веток",
+            "release": "Выполнить релиз",
+            "moveTag": "Сдвинуть тег на последний коммит",
+            "createBranch": "Создать новую ветку",
+            "deleteBranch": "Удалить ветку",
+            "closeMergeRequest": "Закрыть MR",
+            "mergeRequest": "Слить MR",
+            "checkDiffs": "Проверить различия между ветками",
+            "checkNonActualTags": "Поиск неактуальных тегов"
+        },
+        "logFileIsNotFound": "Лог файл для выбранного уведомления не найден",
+        "paginator": {
+            "previousPageCaption": "Предыдущая",
+            "previousPageTitle": "Открыть предыдущую страницу данных",
+            "nextPageCaption": "Следующая",
+            "nextPageTitle": "Открыть следующую страницу данных",
+            "openConcretePageTitleTemplate": "Открыть {0} страницу"
+        }
+    },
+    "parameters": {
+        "requestName": "Название MR",
+        "from": "Исходная ветка",
+        "to": "Целевая ветка",
+        "branch": {
+            "branchName": "Название ветки",
+            "checkDiffs": {},
+            "create": {
+                "saveBranchAsAdditionalBranch": "Добавить ветку в список дополнительных веток"
+            },
+            "delete": {
+                "deleteBranchFromAdditionalBranches": "Удалить ветку из списка дополнительных веток"
+            }
+        },
+        "mergeRequest": {
+            "deleteBranchAfter": "Удалить ветку после закрытия MR",
+            "close": {},
+            "merge": {}
+        },
+        "streamMerge": {
+            "merge": {},
+            "release": {
+                "testBranch": "Тест ветка",
+                "productiveBranch": "Продуктовая ветка",
+                "version": "Версия",
+                "setVersionTagOnMergeCommit": "Установить тег версии на коммите слияния"
+            }
+        },
+        "tag": {
+            "branch": "Ветка",
+            "tagName": "Название тега",
+            "checkNonActual": {},
+            "move": {
+                "createTagIfNotExist": "Создать тег, если он не существует"
+            }
+        }
+    }
+}

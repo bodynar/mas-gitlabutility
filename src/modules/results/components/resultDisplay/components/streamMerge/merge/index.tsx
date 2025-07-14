@@ -4,6 +4,7 @@ import { emptyFn } from "@bodynarf/utils";
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { MergeActionResult, MergeParameters } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import MergeRequestsLists from "../../shared/mergeRequestsLists";
 import { ActionResultDisplayProps } from "../../../component";
@@ -21,13 +22,13 @@ const MergeResultDisplay: FC<MergeResultDisplayProps> = ({
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.sourceBranch}
-                label={{ caption: "From", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.from"), horizontal: true }}
             />
             <Text
                 disabled
                 onValueChange={emptyFn}
                 defaultValue={parameters.targetBranch}
-                label={{ caption: "To", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.to"), horizontal: true }}
             />
             <hr />
             <MergeRequestsLists

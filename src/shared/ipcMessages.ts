@@ -45,5 +45,8 @@ export const ipcMessages = {
 
         /** Close app after history save */
         closeAfterSave: `${appPrefix}_closeAfterSave`,
+
+        /** Update loading state at taskbar if app is minimized */
+        updateLoadingState: `${appPrefix}_updateLoadingState`,
     },
 };

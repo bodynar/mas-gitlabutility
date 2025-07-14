@@ -5,6 +5,7 @@ import { isNullOrUndefined } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { chainPromises } from "@app/core";
+import { getLocalizedText } from "@app/locale";
 import { getGroups } from "@app/core/gitlab/group";
 import { getProjects } from "@app/core/gitlab/project";
 
@@ -69,10 +70,10 @@ export const loadGroups = (
             ) {
                 const errorFn = getDisplayErrorFn(dispatch);
 
-                errorFn("Gitlab is inaccessible");
+                errorFn(getLocalizedText("store.gitlab.gitlabIsInaccessible"));
             }
 
-            showError("Error during groups data load..");
+            showError(getLocalizedText("store.gitlab.errorDuringDataLoad"));
         }
 
         dispatch(setAppStatus(ApplicationStatus.idle));

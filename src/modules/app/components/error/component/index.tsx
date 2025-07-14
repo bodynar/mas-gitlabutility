@@ -4,12 +4,13 @@ import { connect } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 import { getIsAppConfigured } from "@app/core";
+import { getLocalizedText } from "@app/locale";
+import { GlobalAppState } from "@app/store";
 import { logError } from "@app/core/log";
 import { displayError } from "@app/store/notificator";
-import { GlobalAppState } from "@app/store";
 
 /** Props of `ErrorBoundary` */
-interface ErrorBoundaryProps {
+type ErrorBoundaryProps = {
     /** Is gitlab settings set (token & api address) */
     isApiConfigured: boolean;
 
@@ -18,13 +19,13 @@ interface ErrorBoundaryProps {
 
     /** Display error message */
     displayError: (message: string) => void;
-}
+};
 
 /** State of `ErrorBoundary` component */
-interface ErrorBoundaryState {
+type ErrorBoundaryState = {
     /** Is error catch */
     hasError: boolean;
-}
+};
 
 /** Global unhandled error catcher */
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -40,7 +41,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     /** @inheritdoc */
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         this.props.displayError(
-            "Error detected.\nPlease, contact the app owner with saved logs"
+            getLocalizedText("app.error.message")
         );
 
         logError(error, errorInfo);
@@ -68,6 +69,13 @@ export default connect(
         isApiConfigured: getIsAppConfigured(app.settings) && gitlab.apiIsInaccessible !== true
     }),
     {
-        displayError: (message: string) => displayError(message, undefined, { caption: "Open logs", ref: "#!command_open"}),
+        displayError: (message: string) => displayError(
+            message,
+            undefined,
+            {
+                caption: getLocalizedText("app.error.openLogsActionTitle"),
+                ref: "#!command_open"
+            }
+        ),
     }
 )(ErrorBoundary);

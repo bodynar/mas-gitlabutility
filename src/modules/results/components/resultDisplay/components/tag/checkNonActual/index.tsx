@@ -6,6 +6,7 @@ import Anchor from "@bodynarf/react.components/components/anchor";
 import Text from "@bodynarf/react.components/components/primitives/text";
 
 import { CheckNonActualTagsActionError, CheckNonActualTagsActionResult, CheckNonActualTagsParameters, Project } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 
 import { ActionResultDisplayProps } from "../../../component";
 import CopyToClipboardButton from "../../shared/copyToClipboardBtn";
@@ -24,40 +25,49 @@ const CheckNonActualTags: FC<CheckNonActualTagsProps> = ({
 
     const onCopyNonActualClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Not actual tags "${parameters.name}":\n\n${result.nonActual
+            getLocalizedText("results.tag.checkNonActual.nonActualTagsCaption")
+            + ` "${parameters.name}":\n\n`
+            + result.nonActual
                 .map(x => {
                     const projectLink = getProjectJiraRef(x.projectId);
 
-                    return `- ${projectLink}: [Tag|${x.commitLink}] is not on [last commit|${x.latestCommitLink}]`;
+                    return getLocalizedText("results.tag.checkNonActual.copyNonActualTagItemTemplate")
+                        .format(
+                            projectLink,
+                            x.commitLink,
+                            x.latestCommitLink
+                        );
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.name, result.nonActual]);
 
     const onCopyActualClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Actual tags "${parameters.name}":\n\n${result.actual
+            getLocalizedText("results.tag.checkNonActual.actualTagsCaption")
+            + ` "${parameters.name}":\n\n`
+            + result.actual
                 .map(x => {
                     const projectLink = getProjectJiraRef(x);
 
-                    return `- ${projectLink}: Tag is on latest commit`;
+                    return getLocalizedText("results.tag.checkNonActual.copyActualTagItemTemplate")
+                        .format(projectLink);
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.name, result.actual]);
 
     const onCopyErrorsActualClick = useCallback(() => {
         navigator.clipboard.writeText(
-            `Errors during checking actuality of tag "${parameters.name}":\n\n${result.errors
+            getLocalizedText("results.tag.checkNonActual.copyErrorsCaption")
+            + ` "${parameters.name}":\n\n`
+            + result.errors
                 .map(({ projectId, message }) => {
                     const projectLink = getProjectJiraRef(projectId);
 
-                    return `- ${projectLink}: ${message}`;
+                    return getLocalizedText("results.tag.checkNonActual.copyErrorItemTemplate").format(projectLink, message);
                 })
                 .join("\n")
-            }`
         );
     }, [getProjectJiraRef, parameters.name, result.errors]);
 
@@ -66,28 +76,26 @@ const CheckNonActualTags: FC<CheckNonActualTagsProps> = ({
             <Text
                 disabled
                 onValueChange={emptyFn}
+                defaultValue={parameters.branch}
+                label={{ caption: getLocalizedText("parameters.tag.branch"), horizontal: true }}
+            />
+            <Text
+                disabled
+                onValueChange={emptyFn}
                 defaultValue={parameters.name}
-                label={{ caption: "Tag name", horizontal: true }}
+                label={{ caption: getLocalizedText("parameters.tag.tagName"), horizontal: true }}
             />
             <hr />
             <section>
                 <Accordion
-                    caption={`Not actual tags (${result.nonActual.length})`}
                     defaultExpanded
+                    caption={`${getLocalizedText("results.tag.checkNonActual.nonActualTagsCaption")} (${result.nonActual.length})`}
                 >
                     {result.nonActual.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            Non actual were&apos;nt tags found
+                            {getLocalizedText("results.tag.checkNonActual.nonActualTagsEmpty")}
                         </span>
                         : <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyNonActualClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {result.nonActual.map(x =>
                                     <NonActualTagInfo
@@ -99,25 +107,21 @@ const CheckNonActualTags: FC<CheckNonActualTagsProps> = ({
                                     />
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyNonActualClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>
 
-                <Accordion caption={`Actual tags (${result.actual.length})`}>
+                <Accordion caption={`${getLocalizedText("results.tag.checkNonActual.actualTagsCaption")} (${result.actual.length})`}>
                     {result.actual.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No tags that are actual found 😥
+                            {getLocalizedText("results.tag.checkNonActual.actualTagsEmpty")}
                         </span>
                         :
                         <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyActualClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {result.actual.map(x =>
                                     <ResultListItem
@@ -125,31 +129,27 @@ const CheckNonActualTags: FC<CheckNonActualTagsProps> = ({
 
                                         projectId={x}
                                         project={projects.get(x)}
-                                        text="Tag is on latest commit"
+                                        text={getLocalizedText("results.tag.checkNonActual.tagIsOnLatestCommit")}
                                     />
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyActualClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>
 
                 <Accordion
                     defaultExpanded={result.errors.length > 0}
-                    caption={`Errors (${result.errors.length})`}
+                    caption={`${getLocalizedText("common.errors")} (${result.errors.length})`}
                 >
                     {result.errors.length === 0
                         ? <span className="has-text-grey has-text-wrapped has-text-centered">
-                            No errors! Hooray! 🎉
+                            {getLocalizedText("results.noErrorsCaption")}
                         </span>
                         : <>
-                            <div className="top-right-btn-wrapper">
-                                <div>
-                                    <CopyToClipboardButton
-                                        onClick={onCopyErrorsActualClick}
-                                        title="Copy to clipboard for JIRA"
-                                    />
-                                </div>
-                            </div>
                             <ul>
                                 {errors.map(({ items }, index) =>
                                     <>
@@ -171,6 +171,10 @@ const CheckNonActualTags: FC<CheckNonActualTagsProps> = ({
                                     </>
                                 )}
                             </ul>
+                            <CopyToClipboardButton
+                                onClick={onCopyErrorsActualClick}
+                                title={getLocalizedText("results.copyToClipboard")}
+                            />
                         </>
                     }
                 </Accordion>
@@ -192,7 +196,7 @@ type NonActualTagInfoProps = {
     /** Link to commit with tag */
     commitLink: string;
 
-    /** Link to latest commit on master branch */
+    /** Link to latest commit on branch */
     latestCommitLink: string;
 };
 
@@ -211,7 +215,7 @@ const NonActualTagInfo: FC<NonActualTagInfoProps> = ({
                     target="_blank"
                     href={commitLink}
                     className="is-underlined"
-                /> is not on <Anchor
+                /> {getLocalizedText("results.tag.checkNonActual.isNotOn")} <Anchor
                     target="_blank"
                     caption="last commit"
                     className="is-underlined has-text-danger"

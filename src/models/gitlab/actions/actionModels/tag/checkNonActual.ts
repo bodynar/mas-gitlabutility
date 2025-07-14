@@ -4,6 +4,9 @@ import { Actions, ParametrizedAction } from "@app/models";
 export interface CheckNonActualTagsActionConfig {
     /** Tag name */
     name: string;
+
+    /** Branch name */
+    branch: string;
 }
 
 /** CheckNonActualTags action */
@@ -25,4 +28,7 @@ export class CheckNonActualTagsAction extends ParametrizedAction<CheckNonActualT
 export interface CheckNonActualTagsParameters {
     /** Tag name */
     name: string;
+
+    /** Branch name */
+    branch: string;
 }

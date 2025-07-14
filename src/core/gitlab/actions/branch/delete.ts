@@ -2,6 +2,7 @@ import { isNullOrEmpty } from "@bodynarf/utils";
 import { HttpError } from "@bodynarf/utils/api/simple";
 
 import { ActionResultState, BranchAmbiguityData, CancellationToken, DeleteBranchAction, DeleteBranchActionResult, DeleteBranchError, DeleteBranchErrorType, ProcessStateEmitter } from "@app/models";
+import { getLocalizedText } from "@app/locale";
 import { deleteBranch, getBranches } from "@app/core/gitlab/project";
 
 import { actionHandler } from "../common";
@@ -21,6 +22,7 @@ export const performDeleteBranchAction: actionHandler = async (
     const deleted: Array<number> = [];
     const ambiguityItems: Array<BranchAmbiguityData> = [];
     const errors: Array<DeleteBranchError> = [];
+    let isBranchDeleted = false;
 
     for (let index = 0; index < action.projects.length; index++) {
         const projectId = action.projects[index];
@@ -37,7 +39,7 @@ export const performDeleteBranchAction: actionHandler = async (
 
             messageUpdateEventEmitter.trigger({
                 state: index,
-                message: `Processing ${index + 1}\\${action.projects.length}`
+                message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${index + 1}`, `${action.projects.length}`)
             });
 
             const branches = await getBranches(projectId, action.parameters.branchName);
@@ -46,7 +48,7 @@ export const performDeleteBranchAction: actionHandler = async (
                 errors.push({
                     projectId,
                     type: DeleteBranchErrorType.branchNotFound,
-                    message: "Branches not found"
+                    message: getLocalizedText("core.gitlab.branchNotFoundTemplate").format(action.parameters.branchName)
                 });
 
                 continue;
@@ -64,6 +66,14 @@ export const performDeleteBranchAction: actionHandler = async (
             deleteBranch(projectId, action.parameters.branchName);
 
             deleted.push(projectId);
+
+            if (!isBranchDeleted
+                && action.parameters.deleteBranchFromAdditionalBranches
+            ) {
+                isBranchDeleted = true; // if error occurs - do not try again
+
+                action.parameters.extraBranches = action.parameters.extraBranches.filter(x => x !== action.parameters.branchName);
+            }
         } catch (error) {
             if (error instanceof HttpError) {
                 if (error.response.status === 400) {
@@ -97,11 +107,6 @@ export const performDeleteBranchAction: actionHandler = async (
         }
     }
 
-    messageUpdateEventEmitter.trigger({
-        state: action.projects.length,
-        message: `Processing ${action.projects.length}\\${action.projects.length}`
-    });
-
     if (cancellationToken.isCancelled) {
         return {
             status: ActionResultState.cancelled,
@@ -110,6 +115,11 @@ export const performDeleteBranchAction: actionHandler = async (
             errors: errors.sort((x, y) => x.type - y.type),
         };
     }
+
+    messageUpdateEventEmitter.trigger({
+        state: action.projects.length,
+        message: getLocalizedText("core.gitlab.processingStateTemplate").format(`${action.projects.length}`, `${action.projects.length}`)
+    });
 
     let status = ActionResultState.success;
 
